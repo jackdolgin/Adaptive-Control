@@ -121,7 +121,7 @@ async function buildArray(csvInput) {
 
                         selectedImages[i] = new Image();
                         selectedImages[i].src = folderlocationIPNP + "trimmed/" + df[i].Pic_Num + df[i].Dominant_Response + ".png"; // Preload all of the stimuli pictures into the trial matrix/array; we do this before running any of the trials so we stomach the image loading times on the front end
-                        preLoad.yourImages[i] = folderlocationIPNP + "trimmed/" + df[i].Dominant_Response + ".png";
+                        preLoad.yourImages[i] = folderlocationIPNP + "trimmed/" + df[i].Pic_Num + df[i].Dominant_Response + ".png";
                         df[i].fileName = folderlocationIPNP + "trimmed/" + df[i].Pic_Num + df[i].Dominant_Response + ".png";
 
                         if (i < congTrials) {
