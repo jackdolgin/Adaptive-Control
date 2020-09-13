@@ -120,7 +120,9 @@ async function buildArray(csvInput) {
                     if (i < trialTotal) {
 
                         selectedImages[i] = new Image();
-                        df[i].fileName = selectedImages[i].src = folderlocationIPNP + "trimmed/" + df[i].Pic_Num + df[i].Dominant_Response + ".png"; // Preload all of the stimuli pictures into the trial matrix/array; we do this before running any of the trials so we stomach the image loading times on the front end
+                        selectedImages[i].src = folderlocationIPNP + "trimmed/" + df[i].Pic_Num + df[i].Dominant_Response + ".png"; // Preload all of the stimuli pictures into the trial matrix/array; we do this before running any of the trials so we stomach the image loading times on the front end
+                        preLoad.yourImages[i] = folderlocationIPNP + "trimmed/" + df[i].Dominant_Response + ".png";
+                        df[i].fileName = folderlocationIPNP + "trimmed/" + df[i].Pic_Num + df[i].Dominant_Response + ".png";
 
                         if (i < congTrials) {
                             df[i].Label = df[i].Dominant_Response;                                                         // If a trial is congruent, its label is its pic identity; if incongruent, its label is the lead of the pic identity
