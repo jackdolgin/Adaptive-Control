@@ -244,17 +244,19 @@ async function buildArray(csvInput) {
             // same-length gibberish for every trial so there was no (and participants
             // didn't bother to look for a) relationship betewen picture and word length
             if (task === "Neutral"){
-
-                const gibberishWordLength = 5;
+                
                 const alphabet = [...Array(26)].map((x,i)=>String.fromCharCode(i + 97));
                 const remainingLetters = _.difference(alphabet, skipLetters);
+                const randomizedTrialArray = _.shuffle(pracTrialsDf.concat(mainTrialsDf))
 
-                for (i = 0; i < trialArray.length; i++){
-                    trialArray[i].Label = _.sample(remainingLetters, gibberishWordLength).join("")
-                }
+                let gibberishWordLength;
+
+                randomizedTrialArray.forEach(function(item, index){
+                    gibberishWordLength = item.Label.length;
+                    trialArray[index].Label = _.sample(remainingLetters, gibberishWordLength).join("");
+                })
             }
 
-            trialArray.map(o => o.Label = o.Label.toUpperCase())
             /////////////////////////////////////////////////////////////////////////////
 
             resolve(trialArray);

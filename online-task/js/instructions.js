@@ -25,7 +25,7 @@ const instructions_pg1 = function () {
 
 const instructions_pg2 = function () {
     $( "#pg2" ).load( "/online-task/instructions/pg2.html" );
-    console.log("bleh")
+
     instructions_pg3();
 }
 
