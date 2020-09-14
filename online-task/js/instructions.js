@@ -1,10 +1,9 @@
 const finishedLoading = function() {
-    $(".instructionDisplay").hide();
+    $("#instructionDisplay").hide();
     // $(".countDisplay").html(trialCount + " / " + trialArray.length + " trials");
-    $(".top").show();
-    $(".targetDisplay").removeClass("initHidden");
-    $(".targetDisplay").css("display", "flex");
-    $(".targetDisplay").addClass("flexCenter");
+    $("#top").show();
+    $("#targetDisplay").removeClass("initHidden");
+    $("#targetDisplay").addClass("flexCenter");
 
     fixate();
 }
@@ -43,8 +42,7 @@ const instructions_pg3 = function () {
         if (preLoad.manualCheck()) {
             finishedLoading();
         } else {
-            // $(".targetDisplay").css("display", "none");
-            $(".instructionDisplay").css("display", "none");
+            $("#instructionDisplay").css("display", "none");
             $("#loading").show();
         }
     });

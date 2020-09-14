@@ -250,7 +250,7 @@ async function buildArray(csvInput) {
                 const remainingLetters = _.difference(alphabet, skipLetters);
 
                 for (i = 0; i < trialArray.length; i++){
-                    trialArray[i].Label = _.sample(remainingLetters, 5).join("")
+                    trialArray[i].Label = _.sample(remainingLetters, gibberishWordLength).join("")
                 }
             }
 

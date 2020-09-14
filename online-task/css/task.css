@@ -82,14 +82,14 @@ body {
   Content
 -----------------------------------------------------------------*/
 
-.mainDisplay {
+#mainDisplay {
     width: 100vw;
     min-height: 100vh;
     margin: 0;
     padding: 0;
 }
 
-.top {
+#top {
     font-family: arial;
     position: fixed;
     z-index: 2;
@@ -100,13 +100,37 @@ body {
     padding: 0;
 }
 
-.targetDisplay {
+#targetDisplay {
     border: 2px #1e1e1e solid;
     width: 1000px;
     height: 500px;
     font-size: 72px;
     margin: auto;
     text-align: center;
+    /* min-height: 82px; */
+    position: relative;
+    /* display: inline-block; */
+}
+
+#stimText {
+    position: absolute;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.8);
+    /* opacity: 0; */
+
+}
+
+#stimText::before {
+    content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+
+#stimImage {
+    display: block;
+    max-width: 100%;
+    height: auto;
 }
 
 .down {
@@ -139,7 +163,7 @@ body {
     display: none;
 }
 
-.instructionDisplay {
+#instructionDisplay {
 /*
     width: 60%;
     padding: 10px 20px;
