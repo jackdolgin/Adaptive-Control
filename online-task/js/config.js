@@ -2,7 +2,9 @@
 
 const conditionsPerTask = ["Congruent", "Incongruent"]
 
-, folderlocationIPNP = "/images/IPNP/"                                                      // Path  to IPNP folder
+, practiceWords = ["OPTIMAL", "MEMORY", "ABSOLUTE"] // words for practice block
+
+, folderlocationIPNP = "../images/IPNP/"                                                      // Path  to IPNP folder
 
 , spreadsheetLocationIPNP = folderlocationIPNP + "IPNP_spreadsheet.csv"                                                      // Path  to IPNP spreadhseet file
 
@@ -24,7 +26,8 @@ const conditionsPerTask = ["Congruent", "Incongruent"]
 , predictiveSideIncongruentSideDominance = .75                                                                 // ...have set this and the below variable as just one variable since they take on the same value here, but for scalability in theory mostly congruent and mostly incongruent sides could have different proportions
 
 , nonpredictiveSideCongruentSideDominance = .5                                                               // If task is `Neutral` or `Predictive_Blocks` then the sides don't indicate congruency (and...
-, nonpredictiveSideIncongruentSideDominance = .5;                                                            // ...actually trials in those tasks all have an `xDistance` of 0 anyways)
+, nonpredictiveSideIncongruentSideDominance = .5                                                            // ...actually trials in those tasks all have an `xDistance` of 0 anyways)
 
+, failMax = 3;                                                                                       // Max number of fails allowed in practice with annyang before experiment terminates
 
-let mainTrials = 500;                                                                                                                // Like `actualPics` in `pull-in-csv.js`, this is just a starting point
+let mainTrials = 50;                                                                                                                // Like `actualPics` in `pull-in-csv.js`, this is just a starting point

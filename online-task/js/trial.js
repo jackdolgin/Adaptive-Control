@@ -46,7 +46,7 @@ const end_trial = function () {
 
     // if there are no more trials end experiment
     // if (trialCounter > trialArray.length - 1) {
-    if (trialCounter > 125) { // this line is temporary, reinstate the above line when done testing
+    if (trialCounter > 15) { // this line is temporary, reinstate the above line when done testing
         end_exp();
         return
     }

@@ -1,17 +1,21 @@
-const finishedLoading = function() {
-    $("#instructionDisplay").hide();
-    // $(".countDisplay").html(trialCount + " / " + trialArray.length + " trials");
-    $("#top").show();
-    $("#targetDisplay").removeClass("initHidden");
-    $("#targetDisplay").addClass("flexCenter");
+const instrOnOff = function(x) {
 
-    fixate();
+    let avar = (x === "On") ? 0 : 1;
+    let nonavar = 1 - avar
+    anarray = [["#instructionDisplay", "initHidden"], ["#top", "flexCenter"]]
+
+    $(anarray[avar][0]).hide();
+    // $(".countDisplay").html(trialCount + " / " + trialArray.length + " trials");
+    $(anarray[nonavar][0]).show();
+    $("#targetDisplay").removeClass(anarray[avar][1]);
+    $("#targetDisplay").addClass(anarray[nonavar][1]);
 }
 
 const displayInstructions = function() {    // create content display within the main-display div
 
     // Set up initial display & button functions
-    pagination.setup();
+    // pagination.setup();
+    pagination.setup(["pg1","pg2","pg3"]);
 
     // call instruction function
     instructions_pg1();
@@ -47,3 +51,16 @@ const instructions_pg3 = function () {
         }
     });
 }
+
+finishedLoading = async function() {
+
+    instrOnOff("On")
+    // await fail_loop();
+
+    // console.log("failCount = " + failCount)
+
+}
+
+// const instructions_pg4 = function () {
+//     $( "#pg4" ).load( "/online-task/instructions/pg4.html" );
+// }
