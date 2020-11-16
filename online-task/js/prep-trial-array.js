@@ -1,5 +1,6 @@
 const loadCSV = new Promise(
     (resolve, reject) => {
+        
         let csvGoesHere;
 
         Papa.parse(spreadsheetLocationIPNP, {
@@ -14,11 +15,9 @@ const loadCSV = new Promise(
     }
 );
 
-
 async function buildArray(csvInput) {
     return new Promise(
         (resolve, reject) => {
-
             ////////////////////////////////////////////////////// Condition Assigment /////////////////////////////////////////////////////
             const firstCongruencyInt = _.random(1)
             , congruencyA = majorityLeft = conditionsPerTask[firstCongruencyInt]
@@ -56,7 +55,7 @@ async function buildArray(csvInput) {
             }
 
             const blocks = blockSequence.length;
-
+            
             const congruentOverall = numerator / blocks;
 
             const incongruentOverall = 1 - congruentOverall;
@@ -84,7 +83,7 @@ async function buildArray(csvInput) {
             const pracPics = Math.trunc(pracTrials * incongruentMultiplier);                              // As we'll do for `mainTrials`, we need `pracTrials` * `incongruent<ultiplier` number of pics reserved for practice trials so the words used for incongruent practice trials never otherwise appear in the task either as text or pics in either the practice or main sessions
             let mainPics = Math.trunc(mainTrials * incongruentMultiplier);                                  // Ditto as `pracPics` above
             let picsNeeded = pracPics + mainPics;
-
+            
             if (picsNeeded > actualPics) {                                                                                    // If we are asking for more pics than there are pics available (and by pics available, that means only pics that are set to `TRUE` in the `Keep` column of the pic csv), then we need to reduce the number of trials we're working with so we can meet the number of available pictures
                 picsNeeded = actualPics;                                                                                      // The new max number of pictures we can work with is literally the number of pics avaiable
                 mainPics = picsNeeded - pracPics;
@@ -204,7 +203,7 @@ async function buildArray(csvInput) {
                 }
 
                 rowCounter = -1;
-
+                
                 // Loops through rows of old df to search for trials with a congruency
                 // within the ongoing block's quota and that haven't already been included
                 // in the `newRowOrder` list
@@ -244,7 +243,7 @@ async function buildArray(csvInput) {
             // same-length gibberish for every trial so there was no (and participants
             // didn't bother to look for a) relationship betewen picture and word length
             if (task === "Neutral"){
-                
+
                 const alphabet = [...Array(26)].map((x,i)=>String.fromCharCode(i + 97));
                 const remainingLetters = _.difference(alphabet, skipLetters);
                 const randomizedTrialArray = _.shuffle(pracTrialsDf.concat(mainTrialsDf))

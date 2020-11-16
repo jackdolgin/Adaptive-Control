@@ -56,7 +56,6 @@
     ============================================== -->
 
     <!-- external JS -->
-    <!-- <script src="jatos.js"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/nbrosowsky/online-psychology-demos/face-inversion/js/imagePreLoader.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/nbrosowsky/simple-stroop-demo@5ae0637965f47548fdc71000d520de8dcc00ce21/js/eventTimer.js"></script>
@@ -68,26 +67,21 @@
 
     <!-- custom JS -->
     <script type="text/javascript" src="js/config.js"></script>
-    <script type="text/javascript" src="js/prep-trial-array.js"></script>
-    <script type="text/javascript" src="js/practice-task.js"></script>
+     <script type="text/javascript" src="js/prep-trial-array.js"></script>
+     <script type="text/javascript" src="js/practice-task.js"></script>
     <script type="text/javascript" src="js/instructions.js"></script>
     <script type="text/javascript" src="js/trial.js"></script>
     <script type="text/javascript" src="js/audio.js"></script>
     <script type="text/javascript">
-
-        // jatos.onLoad(function () {
-            // get JATOS result ID - used in the audio file names
-             // var result_id = jatos.studyResultId;
-
-            // call our promise in ES7 async await style
-            async function startTask() {
-                const csvIngested = await loadCSV;
-                await buildArray(csvIngested);
-                displayInstructions();
-            }
-            (async () => {
-                await startTask();
-            })();
-        // })
+    
+        async function startTask() {
+            const csvIngested = await loadCSV;
+            await buildArray(csvIngested);
+            displayInstructions();
+        }
+        (async () => {
+            await startTask();
+        })();
+        
     </script>
 </body>
