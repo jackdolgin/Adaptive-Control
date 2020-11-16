@@ -53,7 +53,7 @@ async function testPractice() {
 
     return new Promise(
         (resolve, reject) => {
-            setTimeout(() => {
+            eventTimer.setTimeout(() => {
                 annyang.abort();
                 resolve([recPracticeWords, practiceWords])
                             // resolve(_.isEqual(recPracticeWords, recPracticeWords))
@@ -63,7 +63,7 @@ async function testPractice() {
                 // console.log(practiceWords)
                 // resolve(practicePass)},
 
-            // await setTimeout(function() {
+            // await eventTimer.setTimeout(function() {
             //     annyang.abort();
             //     console.log('Microphone turned off.');
             // }, 15 * 1000);
@@ -74,7 +74,7 @@ async function testPractice() {
 
     //
     // let promise = new Promise((resolve, reject) => {
-    //   setTimeout(() => resolve(practicePass), 15 * 1000)
+    //   eventTimer.setTimeout(() => resolve(practicePass), 15 * 1000)
     // });
     //
     // let result = await promise; // wait until the promise resolves (*)

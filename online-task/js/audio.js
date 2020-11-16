@@ -40,51 +40,37 @@ navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
     const chunks = [];
     // create media recorder instance to initialize recording
     // Note: the MediaRecorder function is not supported in Safari or Edge
-    console.log("stream")
-    console.log(stream)
+
     recorder = new MediaRecorder(stream);
     recorder.data = [];
-    var filename = new Date().toISOString();
+    var filename = 'mydata/sd' + new Date().toISOString();
     recorder.wrapUp = false;
+    console.log("heeeel")
     recorder.ondataavailable = function(e) {
         // add stream data to chunks
         chunks.push(e.data);
         if (recorder.wrapUp) {
+            console.log(filename)
+            console.log("deal")
             const blob = new Blob(chunks, { type: 'audio/webm; codecs=opus' });
             var xhr=new XMLHttpRequest();
-            xhr.onload=function(e) {
-              if(this.readyState === 4) {
-                  console.log("Server returned: ",e.target);
-              }
-            };
             var fd=new FormData();
             fd.append("audio_data",blob, filename);
-            console.log("tojo")
-            console.log(filename)
-            xhr.open("GET","upload.php",true);
+            xhr.open("POST","upload.php",true);
+            console.log("fd")
+            console.log(fd)
             xhr.send(fd);
-            // postprocessing(chunks)
-            // if (typeof trial.postprocessing !== 'undefined') {
-            //     trial.save_file_to_jatos(chunks)
-            //         .then(function(processedData) {
-            //             onRecordingFinish(processedData);
-            //         });
-            // } else {
-            //     // should never fire - trial.postprocessing should use the default function if
-            //     // not passed in via trial parameters
-            //     onRecordingFinish(chunks);
-            // }
         }
     };
     // start recording with 1 second time between receiving 'ondataavailable' events
     recorder.start(1000);
     console.log("start")
-    // setTimeout to stop recording after 4 seconds
-    setTimeout(function() {
+    // eventTimer.setTimeout to stop recording after 4 seconds
+    eventTimer.setTimeout(function() {
         // this will trigger one final 'ondataavailable' event and set recorder state to 'inactive'
         console.log("end")
         recorder.stop();
         recorder.wrapUp = true;
         // console.log(recorder.wrapUp)
-    }, 4000);
+    }, 12000);
 })

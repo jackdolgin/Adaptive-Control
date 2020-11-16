@@ -22,19 +22,19 @@ const displayInstructions = function() {    // create content display within the
 }
 
 const instructions_pg1 = function () {
-    $( "#pg1" ).load( "/online-task/instructions/pg1.html" );
+    $( "#pg1" ).load( "instructions/pg1.html" );
 
     instructions_pg2();
 }
 
 const instructions_pg2 = function () {
-    $( "#pg2" ).load( "/online-task/instructions/pg2.html" );
+    $( "#pg2" ).load( "instructions/pg2.html" );
 
     instructions_pg3();
 }
 
 const instructions_pg3 = function () {
-    $( "#pg3" ).load( "/online-task/instructions/pg3.html" );
+    $( "#pg3" ).load( "instructions/pg3.html" );
 
     preLoad.loadImages("#loading", "#progress", function() {
         finishedLoading()
