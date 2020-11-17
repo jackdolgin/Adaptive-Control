@@ -15,7 +15,7 @@ const displayInstructions = function() {    // create content display within the
 
     // Set up initial display & button functions
     // pagination.setup();
-    pagination.setup(["pg1","pg2","pg3"]);
+    pagination.setup(["pg1","pg2","pg3", "pg4", "pg5"]);
 
     // call instruction function
     instructions_pg1();
@@ -35,6 +35,18 @@ const instructions_pg2 = function () {
 
 const instructions_pg3 = function () {
     $( "#pg3" ).load( "instructions/pg3.html" );
+    
+    instructions_pg4();
+}
+
+const instructions_pg4 = function () {
+    $( "#pg4" ).load( "instructions/pg4.html" );
+    
+    instructions_pg5();
+}
+
+const instructions_pg5 = function () {
+    $( "#pg5" ).load( "instructions/pg5.html" );
 
     preLoad.loadImages("#loading", "#progress", function() {
         finishedLoading()
