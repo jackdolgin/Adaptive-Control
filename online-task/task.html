@@ -50,6 +50,7 @@
                 <div id="stimText"></div>
                 <div id="stimImage"></div>
             </div>
+            <div id="warning" class="initHidden"></div>
         </div>
     </div>
 
@@ -58,30 +59,49 @@
 
     <!-- external JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/nbrosowsky/online-psychology-demos/face-inversion/js/imagePreLoader.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/nbrosowsky/simple-stroop-demo@5ae0637965f47548fdc71000d520de8dcc00ce21/js/eventTimer.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/nbrosowsky/imagePreLoader@bdda11a0d284d8a410bee4900c3c95a7867f90eb/imagePreLoader.min.js" integrity="sha384-GMkAMzrIkNXGIxv70zchqoSDG15NIavN/LjhoJ6hNttAsza9cFEl1FZaIRS4dTwa" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/gh/nbrosowsky/simple-stroop-demo@5ae0637965f47548fdc71000d520de8dcc00ce21/js/eventTimer.min.js" integrity="sha384-1Hp7RFGyB81Oc9NUv7bFiI8XOFSfmXmiAQ4B1gAbli0bVwZV33cSm+uIVAJ0KQRc" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.10.2/underscore-min.js" integrity="sha512-HKvDCFVKg8ZPGjecy6on7UECEpE76Y86h3GaE4JMCz+deFWdjcW/tWnh0hCfaBvURvlOa9f5CNVzt7EFkulYbw==" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.2.0/papaparse.min.js" integrity="sha512-rKFvwjvE4liWPlFnvH4ZhRDfNZ9FOpdkD/BU5gAIA3VS3vOQrQ5BjKgbO3kxebKhHdHcNUHLqxQYSoxee9UwgA==" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/nbrosowsky/online-psychology-demos@5a3d55770d01a03665f0c7ceefd334549b619c4e/face-inversion/js/pagination.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js" integrity="sha512-FRllqoDevM/yUYKzCe8K8qvyou3LAsBLSuKYvLSoAQLo70wWTSU6KSi110dXOpEIW8+ehByraYPC188htrPnjw==" crossorigin="anonymous"></script>
-
+    <script src="https://cdn.jsdelivr.net/gh/nbrosowsky/online-psychology-demos@5a3d55770d01a03665f0c7ceefd334549b619c4e/face-inversion/js/pagination.min.js" integrity="sha384-N67p1DolILAC5MPG0rdcJ7EpDO9y+wBaPYRSZ+7oMSKoKUvgd6hkVkgpE7t3Tebe" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js" integrity="sha512-FRllqoDevM/yUYKzCe8K8qvyou3LAsBLSuKYvLSoAQLo70wWTSU6KSi110dXOpEIW8+ehByraYPC188htrPnjw==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/screenfull.js/5.0.2/screenfull.min.js" integrity="sha512-Xsp2RUVnPbF+7nqthvDZO1LGOqTHuR89rYGlbeHM0G76uiv5VwLLRs31tptp5/bzlKod7Zui1O3mjRX5jzYZ4Q==" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/gh/muaz-khan/DetectRTC@master/DetectRTC.min.js" integrity="sha384-5+XWMyPqzvNUIFcFik6t/79MX8L+6MW/TScaxsdq5duP3a6OtziZIaeDr7uhrwCh" crossorigin="anonymous"></script>
 
     <!-- custom JS -->
-    <script type="text/javascript" src="js/config.js"></script>
-     <script type="text/javascript" src="js/prep-trial-array.js"></script>
-     <script type="text/javascript" src="js/practice-task.js"></script>
-    <script type="text/javascript" src="js/instructions.js"></script>
-    <script type="text/javascript" src="js/trial.js"></script>
-    <script type="text/javascript" src="js/audio.js"></script>
-    <script type="text/javascript">
-    
+    <script src="js/config.js"></script>
+    <script src="js/helper.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/prep-trial-array.js"></script>
+    <script src="js/practice-task.js"></script>
+    <script src="js/instructions.js"></script>
+    <script src="js/trial.js"></script>
+    <script>
+        // console.log("yooo")
+        //      window.addEventListener('message', async function(event) {
+        //          console.log("event.srcElement.location.href = " + event.srcElement.location.href);
+        //          console.log("window.location.href = " + window.location.href);
+        //      })
+        // console.log(thisIsAnObject)
+        // var myVariable = window.opener.thisIsAnObject;
+        // console.log(myVariable)
+        // var thisIsAnObject = window.opener.thisIsAnObject;
+        // console.log(thisIsAnObject)
         async function startTask() {
             const csvIngested = await loadCSV;
-            await buildArray(csvIngested);
+            trialArray = await buildArray(csvIngested);
+            console.log(trialArray);
             displayInstructions();
         }
         (async () => {
-            await startTask();
+            //  window.addEventListener('message', async function(event) {
+                //  console.log("event.srcElement.location.href = " + event.srcElement.location.href);
+                //  console.log("window.location.href = " + window.location.href);
+                // if(event.srcElement.location.href==window.location.href){
+            if (localStorage.getItem("consented") === "yes") {
+                await startTask();
+            }
+            // }); 
         })();
         
     </script>

@@ -21,10 +21,15 @@ async function buildArray(csvInput) {
             ////////////////////////////////////////////////////// Condition Assigment /////////////////////////////////////////////////////
             const firstCongruencyInt = _.random(1)
             , congruencyA = majorityLeft = conditionsPerTask[firstCongruencyInt]
-            , congruencyB = majorityRight = conditionsPerTask[1 - firstCongruencyInt];
-
-            const task = _.sample(possibleTasks);
+            , congruencyB = majorityRight = conditionsPerTask[1 - firstCongruencyInt]
+            , task = _.sample(possibleTasks);
+            
             ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            let congruentBlockDominance
+            , incongruentBlockDominance
+            , congruentSideDominance
+            , incongruentSideDominance;
 
 
             ///////////////////////////////////////////////////////// Trial Proportions //////////////////////////////////////////////////////////
@@ -37,7 +42,7 @@ async function buildArray(csvInput) {
                 congruentBlockDominance = nonpredictiveBlockCongruentBlockDominance;
                 incongruentBlockDominance = nonpredictiveBlockIncongruentBlockDominance;
             }
-
+            
             let numerator = 0;                                                                                                                   // We add to this starting point of zero as we loop through each block, tallying the percent of trials that are congruent and ultimatley dividing by all...
                                                                                                                                                             // ...the blocks in the task to find the percent of trials per block (on average) that are congruent (and therefore incongruent)
             for (i = 0; i < blockSequence.length; i++){
@@ -111,7 +116,7 @@ async function buildArray(csvInput) {
 
             let selectedImages = Array(mainPics.length);
             const abigfunc = function (picTotal, trialTotal, topOrBottom){
-                df = topOrBottom(csvInput, picTotal);                                                                              // We're either working with the top of the csv data frame (`mainPics` number of trials) or the bottom end of the data frame (`pracPics`); this way, no two rows are shared by the practice and main trials
+                let df = topOrBottom(csvInput, picTotal);                                                                              // We're either working with the top of the csv data frame (`mainPics` number of trials) or the bottom end of the data frame (`pracPics`); this way, no two rows are shared by the practice and main trials
                 const incTrials =  Math.trunc(trialTotal * incongruentOverall);
                 const congTrials = trialTotal * congruentOverall;
                 for (i = 0; i < df.length; i++){
@@ -160,16 +165,16 @@ async function buildArray(csvInput) {
             // make note of how many congruent/incongruent trials have now been included in
             // this ongoing block of the new df, and move on to the next row in the new df
 
-            trialsPerBlock = Math.trunc(mainTrialsDf.length / blocks);
+            const trialsPerBlock = Math.trunc(mainTrialsDf.length / blocks)
 
             // Depending on whether the block is predominantly congruent or incongruent,...
-           // ...each block's quota for dominant and rarer trials will vary
-            congruentPerCongBlock = Math.trunc(trialsPerBlock *
-                                               congruentBlockDominance);
-            incongruentPerCongBlock = trialsPerBlock - congruentPerCongBlock;
-            incongruentPerIncongBlock = Math.trunc(trialsPerBlock *
-                                                   incongruentBlockDominance);
-            congruentPerIncongBlock = trialsPerBlock - incongruentPerIncongBlock;
+            // ...each block's quota for dominant and rarer trials will vary
+            , congruentPerCongBlock = Math.trunc(trialsPerBlock *
+                                               congruentBlockDominance)
+            , incongruentPerCongBlock = trialsPerBlock - congruentPerCongBlock
+            , incongruentPerIncongBlock = Math.trunc(trialsPerBlock *
+                                                   incongruentBlockDominance)
+            , congruentPerIncongBlock = trialsPerBlock - incongruentPerIncongBlock;
 
             let block = -1
             , newRowOrder = Array(mainTrialsDf.length)
@@ -234,7 +239,7 @@ async function buildArray(csvInput) {
 
             pracTrialsDf = pracTrialsDf.map(obj=> ({ ...obj, Block: -1}));
             pracTrialsDf = _.shuffle(pracTrialsDf);
-            trialArray = pracTrialsDf.concat(mainTrialsDf)
+            trialArrayLocal = pracTrialsDf.concat(mainTrialsDf)
 
 
             // For task `Neutral`, swaps the labels on the screen to 5-letter gibberish words
@@ -244,21 +249,21 @@ async function buildArray(csvInput) {
             // didn't bother to look for a) relationship betewen picture and word length
             if (task === "Neutral"){
 
-                const alphabet = [...Array(26)].map((x,i)=>String.fromCharCode(i + 97));
-                const remainingLetters = _.difference(alphabet, skipLetters);
-                const randomizedTrialArray = _.shuffle(pracTrialsDf.concat(mainTrialsDf))
+                const alphabet = [...Array(26)].map((x,i)=>String.fromCharCode(i + 97))
+                , remainingLetters = _.difference(alphabet, skipLetters)
+                , randomizedTrialArray = _.shuffle(pracTrialsDf.concat(mainTrialsDf))
 
                 let gibberishWordLength;
 
                 randomizedTrialArray.forEach(function(item, index){
                     gibberishWordLength = item.Label.length;
-                    trialArray[index].Label = _.sample(remainingLetters, gibberishWordLength).join("");
+                    trialArrayLocal[index].Label = _.sample(remainingLetters, gibberishWordLength).join("");
                 })
             }
 
             /////////////////////////////////////////////////////////////////////////////
 
-            resolve(trialArray);
+            resolve(trialArrayLocal);
         }
     )
 }

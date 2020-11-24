@@ -30,13 +30,15 @@ async function testPractice() {
             }, 15 * 1000)
         }
     )
-
 }
 
 async function fail_loop() {
-    let failCount = 0;
+    let failCount = 0
+    , somevals
+    , practicePass;
+    
     while (failCount <= failMax){
-        let somevals = await testPractice();
+        somevals = await testPractice();
         practicePass = await _.isEqual(somevals[0], somevals[1])
         if (practicePass) {
             break
@@ -44,5 +46,6 @@ async function fail_loop() {
             failCount++
         }
     }
-
+    
+    (failCount <= failMax) ? pre_fixate() : end_exp("early")
 }

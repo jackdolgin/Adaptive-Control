@@ -1,27 +1,37 @@
 let trialCounter = 0; // tracks current trial
 
-const pre_fixate = function () {
-    // blank screen before fixation
-    document.querySelector("#stimText").innerHTML = "";
 
-    timer = eventTimer.setTimeout(fixate, 500);
+function pre_fixate() {
+    // if (screenSizeIsOk()){
+    //   fixate();
+    // } else {
+    //     promptScreenSize
+    // }
+
+    eventTimer.setTimeout(fixate, trialDuration["pre_fixate"]);
 }
 
-const fixate = function () {
+function fixate() {
     // display fixation
     document.querySelector("#stimText").innerHTML = "+";
+    document.querySelector("#stimText").style.visibility = "visible";
+    
+    const recordingDuration = trialDuration["fixate"] + trialDuration["post_fixate"] + trialDuration["stimulus"];
+    console.log('heap')
+    recordAudio(recordingDuration);
+    console.log("tbin")
 
-    timer = eventTimer.setTimeout(post_fixate, 1000);
+    eventTimer.setTimeout(post_fixate, trialDuration["fixate"]);
 }
 
-const post_fixate = function () {
+function post_fixate() {
     // blank screen after fixation
     document.querySelector("#stimText").innerHTML = "";
 
-    timer = eventTimer.setTimeout(stimulus, 500);
+    eventTimer.setTimeout(stimulus, trialDuration["post_fixate"]);
 }
 
-const stimulus = function () {
+function stimulus() {
     // save time when the trial started
     trialArray[trialCounter].time_start = window.performance.now();
 
@@ -35,33 +45,38 @@ const stimulus = function () {
     imgdiv.style.visibility = "visible";
 
 
-    timer = eventTimer.setTimeout(end_trial, 2000);  // this line is temporary
+    eventTimer.setTimeout(end_trial, trialDuration["stimulus"]);  // this line is temporary
 }
 
-const end_trial = function () {
-    document.querySelector("#stimImage").style.visibility = "hidden";
-
+function end_trial() {
+    
+    // blank screen before next trial's fixation
+    for (x of ["stimText", "stimImage"]){
+        document.querySelector("#" + x).style.visibility = "hidden";
+    }
+    
     // increase trial counter
-    trialCounter++
+    trialCounter++;
 
     // if there are no more trials end experiment
     // if (trialCounter > trialArray.length - 1) {
     if (trialCounter > 15) { // this line is temporary, reinstate the above line when done testing
-        end_exp();
-        return
+        end_exp("on time");
     }
 
-    // else cue next trial
-    pre_fixate();
+    checkFullScreen();
+    
 }
 
 
-const end_exp = function (){
+function end_exp(x) {
     // typically you would submit the data through php which would automatically trigger the feedback html
     //submit_data();
 
-    // but since the php won't post properly without a server I'll just trigger the html
-     window.open("feedback-letter.html", "_self");
+    if (x === "on time") {
+        // but since the php won't post properly without a server I'll just trigger the html
+         window.open("feedback-letter.html", "_self");
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

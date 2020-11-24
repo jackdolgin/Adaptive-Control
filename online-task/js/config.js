@@ -28,6 +28,15 @@ const conditionsPerTask = ["Congruent", "Incongruent"]
 , nonpredictiveSideCongruentSideDominance = .5                                                               // If task is `Neutral` or `Predictive_Blocks` then the sides don't indicate congruency (and...
 , nonpredictiveSideIncongruentSideDominance = .5                                                            // ...actually trials in those tasks all have an `xDistance` of 0 anyways)
 
-, failMax = 3;                                                                                       // Max number of fails allowed in practice with annyang before experiment terminates
+, failMax = 3                                                                                        // Max number of fails allowed in practice with annyang before experiment terminates
 
-let mainTrials = 50;                                                                                                                // Like `actualPics` in `pull-in-csv.js`, this is just a starting point
+, trialDuration = {"pre_fixate": 500,
+                    "fixate": 1000,
+                    "post_fixate": 500,
+                    "stimulus": 2000};
+
+let mainTrials = 50                                                                                                                // Like `actualPics` in `pull-in-csv.js`, this is just a starting point
+
+, numScreenSizeWarnings = 3
+
+, trialArray;

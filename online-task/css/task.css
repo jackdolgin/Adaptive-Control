@@ -100,15 +100,19 @@ body {
     padding: 0;
 }
 
+#warning,
+#targetDisplay {
+    width: 1000px;
+    text-align: center;
+    position: relative;
+}
+
 #targetDisplay {
     border: 2px #1e1e1e solid;
-    width: 1000px;
     height: 500px;
     font-size: 72px;
     margin: auto;
-    text-align: center;
     /* min-height: 82px; */
-    position: relative;
     /* display: inline-block; */
 }
 
@@ -125,6 +129,10 @@ body {
     display: inline-block;
     height: 100%;
     vertical-align: middle;
+}
+
+#warning {
+    margin: 25px;
 }
 
 #stimImage {
@@ -190,39 +198,55 @@ body {
     justify-content: center;
 }
 
-.button-blue {
-    font-size: 14px;
-    margin: 25px auto;
-    padding: 10px 30px 13px 30px;
-    text-decoration: none;
-    color: #06c;
-    border: 2px #06c solid;
-    outline: none;
-    background: #fff;
+
+.button-beige {
+    font-family: Verdana, sans-serif;
+    font-size: 16px;
+    padding: 8px 12px 8px 12px;
+    text-transform:uppercase;
+    color:#57585b;
 }
 
+.button-blue, 
 .button-green {
     font-size: 14px;
     margin: 25px auto;
     padding: 10px 30px 13px 30px;
     text-decoration: none;
+    outline: none;
+    background: #fefefe;
+}
+
+.button-blue {
+    color: #06c;
+    border: 2px #06c solid;
+}
+
+.button-green {
     color: green;
     border: 2px green solid;
-    outline: none;
-    background: #fff;
+
+}
+
+
+.button-beige:hover,
+.button-blue:hover,
+.button-green:hover {
+    cursor: pointer;
+    color: #fefefe;
+    border: 2px #fefefe solid;
+}
+
+.button-beige:hover {
+    background: #57585b;
+    outline: #57585b;
 }
 
 .button-blue:hover {
-    cursor: pointer;
-    color: #fff;
-    border: 2px #fff solid;
     background: #06c;
 }
 
 .button-green:hover {
-    cursor: pointer;
-    color: #fff;
-    border: 2px #fff solid;
     background: green;
 }
 

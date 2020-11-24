@@ -1,8 +1,8 @@
-const instrOnOff = function(x) {
+function instrOnOff(x, y) {
 
-    let avar = (x === "On") ? 0 : 1;
-    let nonavar = 1 - avar
-    anarray = [["#instructionDisplay", "initHidden"], ["#top", "flexCenter"]]
+    let avar = (x === "Off") ? 0 : 1;
+    let nonavar = 1 - avar;
+    anarray = [["#" + y, "initHidden"], ["#top", "flexCenter"]];
 
     $(anarray[avar][0]).hide();
     // $(".countDisplay").html(trialCount + " / " + trialArray.length + " trials");
@@ -11,49 +11,47 @@ const instrOnOff = function(x) {
     $("#targetDisplay").addClass(anarray[nonavar][1]);
 }
 
-const displayInstructions = function() {    // create content display within the main-display div
+function displayInstructions() {    // create content display within the main-display div
 
+    // let noop = function () {};
+    // navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+    // function requestMicrophone() {
+    //     navigator.getUserMedia({audio: true}, noop, noop)
+    //   }
+    // requestMicrophone()
+    console.log(DetectRTC.browser.isChrome);
+    if (DetectRTC.hasMicrophone === false) {
+    console.log("Tokyon")
+    } else {
+        console.log("Instanbul")
+    }
+
+    const numOfInstructions = 5;
+    const instrPageArray = [...Array(numOfInstructions)];
+    
+    for (x of _.range(1, numOfInstructions + 1)) {
+        
+        instrPageArray[x - 1] = "pg" + x;
+        
+        $( "#pg" + x ).load( "instructions/pg" + x + ".html" );
+        
+        if (x === numOfInstructions) proceedToTask();
+    }
+    
     // Set up initial display & button functions
-    // pagination.setup();
-    pagination.setup(["pg1","pg2","pg3", "pg4", "pg5"]);
+    pagination.setup(instrPageArray);
 
-    // call instruction function
-    instructions_pg1();
 }
 
-const instructions_pg1 = function () {
-    $( "#pg1" ).load( "instructions/pg1.html" );
-
-    instructions_pg2();
-}
-
-const instructions_pg2 = function () {
-    $( "#pg2" ).load( "instructions/pg2.html" );
-
-    instructions_pg3();
-}
-
-const instructions_pg3 = function () {
-    $( "#pg3" ).load( "instructions/pg3.html" );
-    
-    instructions_pg4();
-}
-
-const instructions_pg4 = function () {
-    $( "#pg4" ).load( "instructions/pg4.html" );
-    
-    instructions_pg5();
-}
-
-const instructions_pg5 = function () {
-    $( "#pg5" ).load( "instructions/pg5.html" );
-
+function proceedToTask(){
     preLoad.loadImages("#loading", "#progress", function() {
         finishedLoading()
         $("#loading").hide();
     });
 
     $("#beginExp").click(function () {
+        
+        if (screenfull.isEnabled) screenfull.request();
 
         if (preLoad.manualCheck()) {
             finishedLoading();
@@ -64,15 +62,12 @@ const instructions_pg5 = function () {
     });
 }
 
-finishedLoading = async function() {
+async function finishedLoading() {
 
-    instrOnOff("On")
+    instrOnOff("Off", "instructionDisplay");
     // await fail_loop();
-
-    // console.log("failCount = " + failCount)
+    
+    pre_fixate(); // this line is temporary
 
 }
 
-// const instructions_pg4 = function () {
-//     $( "#pg4" ).load( "/online-task/instructions/pg4.html" );
-// }
