@@ -2,12 +2,6 @@ let trialCounter = 0; // tracks current trial
 
 
 function pre_fixate() {
-    // if (screenSizeIsOk()){
-    //   fixate();
-    // } else {
-    //     promptScreenSize
-    // }
-
     eventTimer.setTimeout(fixate, trialDuration["pre_fixate"]);
 }
 
@@ -17,9 +11,7 @@ function fixate() {
     document.querySelector("#stimText").style.visibility = "visible";
     
     const recordingDuration = trialDuration["fixate"] + trialDuration["post_fixate"] + trialDuration["stimulus"];
-    console.log('heap')
     recordAudio(recordingDuration);
-    console.log("tbin")
 
     eventTimer.setTimeout(post_fixate, trialDuration["fixate"]);
 }

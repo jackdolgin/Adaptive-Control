@@ -33,7 +33,11 @@ const conditionsPerTask = ["Congruent", "Incongruent"]
 , trialDuration = {"pre_fixate": 500,
                     "fixate": 1000,
                     "post_fixate": 500,
-                    "stimulus": 2000};
+                    "stimulus": 2000}
+
+, experimenterEmail = "XXXX@gmail.com"
+
+, hosturl = "https://cdmlab.a2hosted.com?";
 
 let mainTrials = 50                                                                                                                // Like `actualPics` in `pull-in-csv.js`, this is just a starting point
 

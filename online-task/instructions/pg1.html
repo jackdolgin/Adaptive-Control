@@ -5,13 +5,35 @@
         <h2>
             Welcome to the experiment!
         </h2>
-        <p>
-            Before you begin, please note that this is a voice recording task. Before we tell you more about the task, the next few pages provide detail on relevant technical aspects of the audio aspect of the experiment.
+        <p id='introduction'>
+            Before you begin, please note that this is a voice recording task, so it is required that you click "Allow" on you are asked for microphone permission.
         </p>
-        <p>
-            Feel free to use the "next" and "back" buttons to move through the instructions. Once you hit "start" however, you will not be able to go back.
-        </p>
-        <p>
+        <button id="askPermission" class="button-beige">Verify Audio Permissions</button>
+        <br>
+        <p id="advancing"></p>
+        
+        <script>
+            document.querySelector("#askPermission").addEventListener("click", async function() {
+                let micAccess = (await navigator.permissions.query({ name: 'microphone' })).state; // this function is from https://developer.mozilla.org/en-US/docs/Web/API/Permissions_API
+                if (micAccess === "granted") {
+                    for (section of ["introduction", "askPermission"]) {
+                        document.querySelector("#" + section).style.visibility = "hidden";
+                    }
+                    document.querySelector("#advancing").innerHTML =
+                        "Success! Feel free to use the 'next' and 'back' buttons to move through the instructions. Once you hit 'start' however, you will not be able to go back.";
+                    
+                    if (screenfull.isEnabled) screenfull.request();
+                    
+                    $("#pageUp").show();
+                } else if (micAccess === "prompt"){
+                    document.querySelector("#advancing").innerHTML =
+                        "It looks like you haven't responded to the audio permissions prompt, which should have appeared on the top left of the screen. If you don't see the prompt, please " + checkSettings("above");
+                } else {
+                    document.querySelector("#advancing").innerHTML =
+                        resolveDeniedAudio + checkSettings("above");
+                }
+            });
+        </script>
 <!-- 
     </body>
 </html> -->

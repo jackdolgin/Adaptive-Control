@@ -59,7 +59,7 @@
 
     <!-- external JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/gh/nbrosowsky/imagePreLoader@bdda11a0d284d8a410bee4900c3c95a7867f90eb/imagePreLoader.min.js" integrity="sha384-GMkAMzrIkNXGIxv70zchqoSDG15NIavN/LjhoJ6hNttAsza9cFEl1FZaIRS4dTwa" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/gh/nbrosowsky/online-psychology-demos@b64710331e704847af0156a22848407d70e0bb21/face-inversion/js/imagePreLoader.min.js" integrity="sha384-JmJKpneOGjoxbuvMq20yGkYSBWdeLhU6PqoizV54gdtA5IfgLQS5lKPyT0a6dmKI" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/gh/nbrosowsky/simple-stroop-demo@5ae0637965f47548fdc71000d520de8dcc00ce21/js/eventTimer.min.js" integrity="sha384-1Hp7RFGyB81Oc9NUv7bFiI8XOFSfmXmiAQ4B1gAbli0bVwZV33cSm+uIVAJ0KQRc" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.10.2/underscore-min.js" integrity="sha512-HKvDCFVKg8ZPGjecy6on7UECEpE76Y86h3GaE4JMCz+deFWdjcW/tWnh0hCfaBvURvlOa9f5CNVzt7EFkulYbw==" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.2.0/papaparse.min.js" integrity="sha512-rKFvwjvE4liWPlFnvH4ZhRDfNZ9FOpdkD/BU5gAIA3VS3vOQrQ5BjKgbO3kxebKhHdHcNUHLqxQYSoxee9UwgA==" crossorigin="anonymous"></script>
@@ -70,23 +70,14 @@
 
     <!-- custom JS -->
     <script src="js/config.js"></script>
-    <script src="js/helper.js"></script>
+    <script src="js/checks.js"></script>
     <script src="js/audio.js"></script>
     <script src="js/prep-trial-array.js"></script>
     <script src="js/practice-task.js"></script>
     <script src="js/instructions.js"></script>
     <script src="js/trial.js"></script>
     <script>
-        // console.log("yooo")
-        //      window.addEventListener('message', async function(event) {
-        //          console.log("event.srcElement.location.href = " + event.srcElement.location.href);
-        //          console.log("window.location.href = " + window.location.href);
-        //      })
-        // console.log(thisIsAnObject)
-        // var myVariable = window.opener.thisIsAnObject;
-        // console.log(myVariable)
-        // var thisIsAnObject = window.opener.thisIsAnObject;
-        // console.log(thisIsAnObject)
+    
         async function startTask() {
             const csvIngested = await loadCSV;
             trialArray = await buildArray(csvIngested);
@@ -94,14 +85,9 @@
             displayInstructions();
         }
         (async () => {
-            //  window.addEventListener('message', async function(event) {
-                //  console.log("event.srcElement.location.href = " + event.srcElement.location.href);
-                //  console.log("window.location.href = " + window.location.href);
-                // if(event.srcElement.location.href==window.location.href){
             if (localStorage.getItem("consented") === "yes") {
                 await startTask();
             }
-            // }); 
         })();
         
     </script>

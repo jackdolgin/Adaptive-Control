@@ -19,12 +19,6 @@ function displayInstructions() {    // create content display within the main-di
     //     navigator.getUserMedia({audio: true}, noop, noop)
     //   }
     // requestMicrophone()
-    console.log(DetectRTC.browser.isChrome);
-    if (DetectRTC.hasMicrophone === false) {
-    console.log("Tokyon")
-    } else {
-        console.log("Instanbul")
-    }
 
     const numOfInstructions = 5;
     const instrPageArray = [...Array(numOfInstructions)];
@@ -40,6 +34,12 @@ function displayInstructions() {    // create content display within the main-di
     
     // Set up initial display & button functions
     pagination.setup(instrPageArray);
+    // eventTimer.setTimeout(navigator.mediaDevices.getUserMedia({ audio: true }),
+    //                       2000);
+    // $("#pageDown").hide();
+    $("#pageUp").hide();
+    setTimeout(function(){
+        navigator.mediaDevices.getUserMedia({ audio: true }); }, 1200);
 
 }
 
@@ -50,8 +50,6 @@ function proceedToTask(){
     });
 
     $("#beginExp").click(function () {
-        
-        if (screenfull.isEnabled) screenfull.request();
 
         if (preLoad.manualCheck()) {
             finishedLoading();
