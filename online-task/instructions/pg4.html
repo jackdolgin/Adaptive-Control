@@ -2,13 +2,16 @@
 <html lang="en" dir="ltr">
     <head></head>
     <body> -->
-    <h3>3. Voice Recording Details:</h3>
-    <p>
-         It is also your right to know how we make use of the audio data. Privacy is of upmost importance to us, so rest assured we will store your audio data on our encrypted server taking advantage of a locally imported, privacy-respecting speech-to-text automator.
-    </p>
+    <!--<script src="js/config.js"></script>-->
+    <h3>3. Success:</h3>
+    <p id="futureCheckpoints"></p>
     <p>
         If you’re still interested in participating, you can now read the instructions for the task.
     </p>
+    <script>
+        document.querySelector("#futureCheckpoints").innerHTML =
+             "Well done! You’ll see one of these audio checks " +  + blockSequence.length + "more times during the task at different checkpoints. Once again there will be four chances at every checkpoint to properly say the prompted words, just in case anything does go awry on a given attempt. However, please note that we can’t guarantee your payment unless you successfully pass each checkpoint, so it is quite important that you answer them carefully."
+    </script>
 <!-- 
     </body>
 </html> -->

@@ -32,7 +32,7 @@ function stimulus() {
 
     let imgdiv = document.querySelector("#stimImage"); // insert trial stimulus image into div
     imgdiv.innerHTML =
-        "<img src='" + trialArray[trialCounter].fileName + "'></img>";
+        "<img src='" + trialArray[trialCounter].fileName + "'/>";
 
     imgdiv.style.visibility = "visible";
 

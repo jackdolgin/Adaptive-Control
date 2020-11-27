@@ -4,7 +4,7 @@
 
 body {
     font-family: Helvetica, arial;
-    font-size: 16px;
+    font-size: 26px;
     margin: 0;
     padding: 0;
     color: black;
@@ -95,6 +95,7 @@ body {
     z-index: 2;
     display: none;
     float: left;
+    font-size: 16px;
     height: 100px;
     margin-left: 25px;
     padding: 0;
@@ -105,6 +106,12 @@ body {
     width: 1000px;
     text-align: center;
     position: relative;
+}
+
+#instrImage {
+    display: block;
+    margin: auto;
+    height: 400px;
 }
 
 #targetDisplay {

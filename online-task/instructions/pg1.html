@@ -6,7 +6,7 @@
             Welcome to the experiment!
         </h2>
         <p id='introduction'>
-            Before you begin, please note that this is a voice recording task, so it is required that you click "Allow" on you are asked for microphone permission.
+            Before you begin, please click "Allow" for the prompts that asks you for permissions to use your microphone. You’ll be giving your responses during this task with your voice, so we need access to your microphone to record what you say. After selecting 'Allow', click the button below to verify that it worked.
         </p>
         <button id="askPermission" class="button-beige">Verify Audio Permissions</button>
         <br>
@@ -20,17 +20,17 @@
                         document.querySelector("#" + section).style.visibility = "hidden";
                     }
                     document.querySelector("#advancing").innerHTML =
-                        "Success! Feel free to use the 'next' and 'back' buttons to move through the instructions. Once you hit 'start' however, you will not be able to go back.";
+                        "Great, it worked! You can now proceed with the instructions by clicking Next. There will be Next and Back buttons throughout the instructions so you can toggle back and forth. The final page of instructions will include a Start button instead of 'Next', and once clicking Start the instructions will disappear.";
                     
                     if (screenfull.isEnabled) screenfull.request();
                     
                     $("#pageUp").show();
                 } else if (micAccess === "prompt"){
                     document.querySelector("#advancing").innerHTML =
-                        "It looks like you haven't responded to the audio permissions prompt, which should have appeared on the top left of the screen. If you don't see the prompt, please " + checkSettings("above");
+                        "Please click 'Allow' before clicking this button. The popup should be in the top left of your screen, but if you don't see it you can " + checkSettings;
                 } else {
                     document.querySelector("#advancing").innerHTML =
-                        resolveDeniedAudio + checkSettings("above");
+                        resolveDeniedAudio + checkSettings;
                 }
             });
         </script>

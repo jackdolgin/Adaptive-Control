@@ -2,7 +2,7 @@
 
 const conditionsPerTask = ["Congruent", "Incongruent"]
 
-, practiceWords = ["OPTIMAL", "MEMORY", "ABSOLUTE"] // words for practice block
+, practiceWords = ['colleague', 'mischievous', 'zaniest'] // words for practice block
 
 , folderlocationIPNP = "../images/IPNP/"                                                      // Path  to IPNP folder
 
@@ -31,9 +31,11 @@ const conditionsPerTask = ["Congruent", "Incongruent"]
 , failMax = 3                                                                                        // Max number of fails allowed in practice with annyang before experiment terminates
 
 , trialDuration = {"pre_fixate": 500,
-                    "fixate": 1000,
-                    "post_fixate": 500,
-                    "stimulus": 2000}
+                   "fixate": 1000,
+                   "post_fixate": 500,
+                   "stimulus": 2000}
+
+, sppechRecognitionDuration = 10
 
 , experimenterEmail = "XXXX@gmail.com"
 

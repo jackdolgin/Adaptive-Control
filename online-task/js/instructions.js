@@ -1,45 +1,16 @@
-function instrOnOff(x, y) {
+function displayInstructions(firstPage, lastPage, nextFunc) {    // create content display within the main-display div
 
-    let avar = (x === "Off") ? 0 : 1;
-    let nonavar = 1 - avar;
-    anarray = [["#" + y, "initHidden"], ["#top", "flexCenter"]];
-
-    $(anarray[avar][0]).hide();
-    // $(".countDisplay").html(trialCount + " / " + trialArray.length + " trials");
-    $(anarray[nonavar][0]).show();
-    $("#targetDisplay").removeClass(anarray[avar][1]);
-    $("#targetDisplay").addClass(anarray[nonavar][1]);
-}
-
-function displayInstructions() {    // create content display within the main-display div
-
-    // let noop = function () {};
-    // navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
-    // function requestMicrophone() {
-    //     navigator.getUserMedia({audio: true}, noop, noop)
-    //   }
-    // requestMicrophone()
-
-    const numOfInstructions = 5;
+    const numOfInstructions = lastPage;
     const instrPageArray = [...Array(numOfInstructions)];
     
-    for (x of _.range(1, numOfInstructions + 1)) {
-        
+    for (x of _.range(firstPage, numOfInstructions + firstPage)) {
         instrPageArray[x - 1] = "pg" + x;
         
         $( "#pg" + x ).load( "instructions/pg" + x + ".html" );
-        
-        if (x === numOfInstructions) proceedToTask();
+        if (x === numOfInstructions) nextFunc();
     }
     
-    // Set up initial display & button functions
     pagination.setup(instrPageArray);
-    // eventTimer.setTimeout(navigator.mediaDevices.getUserMedia({ audio: true }),
-    //                       2000);
-    // $("#pageDown").hide();
-    $("#pageUp").hide();
-    setTimeout(function(){
-        navigator.mediaDevices.getUserMedia({ audio: true }); }, 1200);
 
 }
 
@@ -61,11 +32,20 @@ function proceedToTask(){
 }
 
 async function finishedLoading() {
-
-    instrOnOff("Off", "instructionDisplay");
-    // await fail_loop();
     
-    pre_fixate(); // this line is temporary
-
+    instrOnOff("Off", "instructionDisplay");
+    fail_loop([4, 8, pre_fixate], displayInstructions);
 }
 
+function instrOnOff(x, y) {
+
+    let avar = (x === "Off") ? 0 : 1;
+    let nonavar = 1 - avar;
+    anarray = [["#" + y, "initHidden"], ["#top", "flexCenter"]];
+
+    $(anarray[avar][0]).hide();
+    // $(".countDisplay").html(trialCount + " / " + trialArray.length + " trials");
+    $(anarray[nonavar][0]).show();
+    $("#targetDisplay").removeClass(anarray[avar][1]);
+    $("#targetDisplay").addClass(anarray[nonavar][1]);
+}

@@ -1,4 +1,7 @@
 let screenSizePromptCount = 0;
+const checkSettings = "manually grant permission by typing this link into your browser and from there selecting 'Allow' next to Microphone. Finally, click the Verify Audio Permissions button on this page to ensure it worked and then you’ll be able to proceed with the experiment.<br/>chrome://settings/content/siteDetails?site=" + encodeURIComponent(hosturl) + "<br/>";
+const resolveDeniedAudio = "It appears your microphone access has been blocked for this website. To change your settings, please ";
+
 
 function checkFullScreen(){
     if (screenfull.isFullscreen){
@@ -50,16 +53,10 @@ function proceed(prevfunc) {
     }
 }
 
-function checkSettings(x) {
-    return "go to <br/>chrome://settings/content/siteDetails?site=" + encodeURIComponent(hosturl) + "<br/>allow microphone permissions, and then click this button " + x + " to proceed with the experiment.";
-}
-
-const resolveDeniedAudio = "It appears your microphone access has been blocked for this website. Please ";
-
 async function checkAudio(x) {
     let checks = {
         'Connection': ["DetectRTC.hasMicrophone", "<p>It appears that your computer is not currently connected to an audio input (you may have disconnected a headphone or microphone cord). When you reconnect the audio input, click the button below to proceed with the experiment.</p><button id='removeWarning' class='button-beige' >Continue Experiment</button>"],
-        'Permission': ["DetectRTC.isWebsiteHasMicrophonePermissions", "<p>" + resolveDeniedAudio + checkSettings("below") + "</p><button id='removeWarning' class='button-beige' >Continue Experiment</button>"]
+        'Permission': ["DetectRTC.isWebsiteHasMicrophonePermissions", "<p>" + resolveDeniedAudio + checkSettings + "</p><button id='removeWarning' class='button-beige' >Continue Experiment</button>"]
 
     };
     let check = checks[x][0];
@@ -78,7 +75,7 @@ async function checkAudio(x) {
             if (await (helperfunc(check))) {
                 if (screenfull.isEnabled) screenfull.request();
                 instrOnOff("Off", "warning");
-                proceed(x)
+                proceed(x);
             }
         });
     }
