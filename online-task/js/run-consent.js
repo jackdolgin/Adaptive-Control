@@ -6,16 +6,19 @@
             resolve(
                 [DetectRTC.isMobileDevice,
                 DetectRTC.browser.isChrome,
+                DetectRTC.browser.version >= 64,
                 DetectRTC.hasMicrophone]);
         });
     });
      
-    if (localSettings[0]){
+    if (localSettings[0]) {
         rejectPreConsent("<p>A computer is required for this experiment (as opposed to a smartphone or tablet).</p>");
     } else if (!localSettings[1]) {
         rejectPreConsent("<p>This experiment can only be run in <a href='https://www.google.com/chrome'>Google Chrome</a>. Please switch browsers to participate.</p>");
     } else if (!localSettings[2]) {
-        rejectPreConsent("<p>It appears that your computer is not currently connected to an audio input. We’ll need to record your voice during the task to pick up your answers, so it is required that you have a high-quality audio input into your computer (native to some laptops, for others may require an external microphone or headphones with microphone capabilities).</p>")
+        rejectPreConsent("<p>This experiment can only be run in Chrome versions 64 or greater. Please <a href='https://support.google.com/chrome/answer/95414'>update your browser</a> to participate.</p>");
+    } else if (!localSettings[3]) {
+        rejectPreConsent("<p>It appears that your computer is not currently connected to an audio input. We’ll need to record your voice during the task to pick up your answers, so it is required that you have a high-quality audio input into your computer (native to some laptops, for others may require an external microphone or headphones with microphone capabilities).</p>");
     } else {
         document.querySelector("#info-consent-letter").style.display = "block";
         document.querySelector("#info-consent-letter").style.visibility = "visible";

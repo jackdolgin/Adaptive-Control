@@ -8,7 +8,7 @@ const conditionsPerTask = ["Congruent", "Incongruent"]
 
 , spreadsheetLocationIPNP = folderlocationIPNP + "IPNP_spreadsheet.csv"                                                      // Path  to IPNP spreadhseet file
 
-, pracTrials = 12                                                                                                                      // Presumably practice trial total will never encroach on the total number of pics we have access to, so doesn't need to be updated in the rest of the file unlike `mainTrials`
+, pracTrials = 2                                                                                                                      // Presumably practice trial total will never encroach on the total number of pics we have access to, so doesn't need to be updated in the rest of the file unlike `mainTrials`
 
 , skipLetters = ["a", "e", "i", "l", "o", "u", "y"]                                                                                // Removes these characters from possibly being in the gibberish word during the `Neutral` task
 
@@ -28,14 +28,14 @@ const conditionsPerTask = ["Congruent", "Incongruent"]
 , nonpredictiveSideCongruentSideDominance = .5                                                               // If task is `Neutral` or `Predictive_Blocks` then the sides don't indicate congruency (and...
 , nonpredictiveSideIncongruentSideDominance = .5                                                            // ...actually trials in those tasks all have an `xDistance` of 0 anyways)
 
-, failMax = 3                                                                                        // Max number of fails allowed in practice with annyang before experiment terminates
+, failMax = 4                                                                                        // Max number of fails allowed in practice with annyang before experiment terminates
 
 , trialDuration = {"pre_fixate": 500,
                    "fixate": 1000,
                    "post_fixate": 500,
                    "stimulus": 2000}
 
-, sppechRecognitionDuration = 10
+, speechRecognitionDuration = 10
 
 , experimenterEmail = "XXXX@gmail.com"
 

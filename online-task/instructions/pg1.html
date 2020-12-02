@@ -6,33 +6,36 @@
             Welcome to the experiment!
         </h2>
         <p id='introduction'>
-            Before you begin, please click "Allow" for the prompts that asks you for permissions to use your microphone. You’ll be giving your responses during this task with your voice, so we need access to your microphone to record what you say. After selecting 'Allow', click the button below to verify that it worked.
+            Before you begin, please click "Allow" for the prompt that asks you for permission to use your microphone. You’ll be giving your responses during this task with your voice, so we need access to your microphone to record what you say. After selecting "Allow", click the button below to verify that it worked.
         </p>
         <button id="askPermission" class="button-beige">Verify Audio Permissions</button>
         <br>
         <p id="advancing"></p>
         
         <script>
-            document.querySelector("#askPermission").addEventListener("click", async function() {
-                let micAccess = (await navigator.permissions.query({ name: 'microphone' })).state; // this function is from https://developer.mozilla.org/en-US/docs/Web/API/Permissions_API
-                if (micAccess === "granted") {
-                    for (section of ["introduction", "askPermission"]) {
-                        document.querySelector("#" + section).style.visibility = "hidden";
+            (() => {
+                $("#pageUp").hide();
+                document.querySelector("#askPermission").addEventListener("click", async function() {
+                    let micAccess = (await navigator.permissions.query({ name: 'microphone' })).state; // this function is from https://developer.mozilla.org/en-US/docs/Web/API/Permissions_API
+                    if (micAccess === "granted") {
+                        for (section of ["introduction", "askPermission"]) {
+                            document.querySelector("#" + section).style.visibility = "hidden";
+                        }
+                        document.querySelector("#advancing").innerHTML =
+                            'Great, it worked! You can now proceed with the instructions by clicking "Next". There will be "Next" and "Back" buttons throughout the instructions so you can toggle back and forth. The final page of instructions will include a "Start" button instead of "Next", and once clicking "Start" the instructions will disappear.';
+                        
+                        if (screenfull.isEnabled) screenfull.request();
+                        
+                        $("#pageUp").show();
+                    } else if (micAccess === "prompt"){
+                        document.querySelector("#advancing").innerHTML =
+                            'Please select "Allow" before clicking this button. The popup should be in the top left of your screen, but if you don’t see it you can ' + checkSettings;
+                    } else {
+                        document.querySelector("#advancing").innerHTML =
+                            resolveDeniedAudio + checkSettings;
                     }
-                    document.querySelector("#advancing").innerHTML =
-                        "Great, it worked! You can now proceed with the instructions by clicking Next. There will be Next and Back buttons throughout the instructions so you can toggle back and forth. The final page of instructions will include a Start button instead of 'Next', and once clicking Start the instructions will disappear.";
-                    
-                    if (screenfull.isEnabled) screenfull.request();
-                    
-                    $("#pageUp").show();
-                } else if (micAccess === "prompt"){
-                    document.querySelector("#advancing").innerHTML =
-                        "Please click 'Allow' before clicking this button. The popup should be in the top left of your screen, but if you don't see it you can " + checkSettings;
-                } else {
-                    document.querySelector("#advancing").innerHTML =
-                        resolveDeniedAudio + checkSettings;
-                }
-            });
+                });
+            })();
         </script>
 <!-- 
     </body>

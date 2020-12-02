@@ -2,9 +2,16 @@
 <html lang="en" dir="ltr">
     <head></head>
     <body> -->
-    <h3>Example 1:</h3>
-    <p>For instance, in the example below, you would say <strong>"Circle"</strong> into the microphone.</p>
-    <img id='instrImage' src='../images/circle-circle.png'/>
+        <h3>Example 1</h3>
+        <p>For instance, in the example below, you would say <strong>"Circle"</strong> into the microphone.</p>
+        <img id='instrImage1'/>
+        <script>
+            (() => {        
+                let overlaid = (task === "Neutral") ? "vpfs" : "circle";
+                document.getElementById('instrImage1').src =
+                    '../images/instructions/' + overlaid + '-circle.png';
+            })();
+        </script>
 <!-- 
     </body>
 </html> -->

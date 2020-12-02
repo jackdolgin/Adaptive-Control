@@ -2,15 +2,15 @@
 <html lang="en" dir="ltr">
     <head></head>
     <body> -->
-    <h3>2. Voice Recording Details:</h3>
-    <p>
-        We will use an automated system to process your voice responses, so you’ll need to enunciate when you speak and avoid using filler words like 'Um'.
-    </p>
-    <p id="checkPointInstructions"></p>
-    <script>
-        document.querySelector("#checkPointInstructions").innerHTML =
-            "Let’s practice! Please read aloud each of the three words you see on the next screen, in order. You’ll have " + sppechRecognitionDuration + " seconds, and if it doesn’t get processed correctly you’ll have " + failMax + " more chances."
-    </script>
+        <h3>Voice Recording Details</h3>
+        <p>
+            We will use an automated system to process your voice responses, so you’ll need to enunciate when you speak and avoid using filler words like "Um".
+        </p>
+        <p id="checkPointInstructions"></p>
+        <script>
+            document.querySelector("#checkPointInstructions").innerHTML =
+                "Let’s practice! Please read aloud each of the three words you see on the next screen, in order, taking a second or two of a pause between words. You’ll have " + speechRecognitionDuration + " seconds, and if it doesn’t get processed correctly you’ll have " + failMax + " more chances.";
+        </script>
 <!-- 
     </body>
 </html> -->

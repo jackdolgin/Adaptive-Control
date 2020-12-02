@@ -2,9 +2,25 @@
 <html lang="en" dir="ltr">
     <head></head>
     <body> -->
-    <h3>Example 2:</h3>
-    <p>In this example, you would say <strong>"Triangle"</strong> since that’s what the image is.</p>
-    <img id='instrImage' src='../images/square-triangle.png'/>
+        <h3>Example 2</h3>
+        <p id='ex2Resp'></p>
+        <img id='instrImage2'/>
+        <script>
+            (() => {
+                let textEx2 = 'In this example, you would say <strong>"Triangle"</strong>'
+                , overlaid;
+                if (task === "Neutral") {
+                    overlaid = "msplb";
+                    textEx2 += ".</p>";
+                } else {
+                    overlaid = "square";
+                    textEx2 += " since that’s what the image is.</p>";
+                }
+                document.querySelector("#ex2Resp").innerHTML = textEx2;
+                document.getElementById('instrImage2').src =
+                    '../images/instructions/' + overlaid + '-triangle.png';
+            })();
+        </script>
 <!-- 
     </body>
 </html> -->

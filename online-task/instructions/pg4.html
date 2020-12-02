@@ -2,16 +2,15 @@
 <html lang="en" dir="ltr">
     <head></head>
     <body> -->
-    <!--<script src="js/config.js"></script>-->
-    <h3>3. Success:</h3>
-    <p id="futureCheckpoints"></p>
-    <p>
-        If you’re still interested in participating, you can now read the instructions for the task.
-    </p>
-    <script>
-        document.querySelector("#futureCheckpoints").innerHTML =
-             "Well done! You’ll see one of these audio checks " +  + blockSequence.length + "more times during the task at different checkpoints. Once again there will be four chances at every checkpoint to properly say the prompted words, just in case anything does go awry on a given attempt. However, please note that we can’t guarantee your payment unless you successfully pass each checkpoint, so it is quite important that you answer them carefully."
-    </script>
+        <h3>Success</h3>
+        <p id="futureCheckpoints"></p>
+        <p>
+            If you’re still interested in participating, you can now read the instructions for the task.
+        </p>
+        <script>
+            document.querySelector("#futureCheckpoints").innerHTML =
+                 "Well done! There will be " + (blockSequence.length - 1) + " breaks during the main portion of the task (which you’ll hear more about briefly), and each will contain another one of these audio checks. It will work the same way each time, but again you will have to successfully complete each checkpoint in one of the " + (failMax + 1) + " allotted chances in order to be paid.";
+        </script>
 <!-- 
     </body>
 </html> -->

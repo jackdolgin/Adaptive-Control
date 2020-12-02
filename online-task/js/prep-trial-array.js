@@ -1,3 +1,5 @@
+const task = _.sample(possibleTasks);
+
 const loadCSV = new Promise(
     (resolve, reject) => {
         
@@ -21,8 +23,8 @@ async function buildArray(csvInput) {
             ////////////////////////////////////////////////////// Condition Assigment /////////////////////////////////////////////////////
             const firstCongruencyInt = _.random(1)
             , congruencyA = majorityLeft = conditionsPerTask[firstCongruencyInt]
-            , congruencyB = majorityRight = conditionsPerTask[1 - firstCongruencyInt]
-            , task = _.sample(possibleTasks);
+            , congruencyB = majorityRight = conditionsPerTask[1 - firstCongruencyInt];
+
             
             ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -45,7 +47,7 @@ async function buildArray(csvInput) {
             
             let numerator = 0;                                                                                                                   // We add to this starting point of zero as we loop through each block, tallying the percent of trials that are congruent and ultimatley dividing by all...
                                                                                                                                                             // ...the blocks in the task to find the percent of trials per block (on average) that are congruent (and therefore incongruent)
-            for (i = 0; i < blockSequence.length; i++){
+            for (let i = 0; i < blockSequence.length; i++) {
                 if (blockSequence[i] === "A") {
                     blockSequence[i] = congruencyA;
                 } else if (blockSequence[i] === "B") {
@@ -106,20 +108,20 @@ async function buildArray(csvInput) {
                 .value();
 
             let xDistance;
-            if (task === "Predictive_Locations"){
+            if (task === "Neutral" || task === "Predictive_Blocks"){
                 xDistance = 0;                                                                                                        // Unless the task is `Predictive_Locations`, the stimuli (pics and words) should be presented at the center of the screen
-            } else if (task === "Neutral" || task === "Predictive_Blocks") {
-                xDistance = 7;                                                                                                        // For task `Predictive_Locations`, the stimuli are presented this many centimeters on either the right or left of the screen (side depends on the trial number, which in turn depends on the congruency of the trial)*** might have to update the meaning of this value for Javascript, might not mean cm anymore, might be like pixels
-                let sideRandomizer = _.sample([-1, 1]);
+            } else if (task === "Predictive_Locations") {
+                xDistance = 1;                                                                                                        // For task `Predictive_Locations`, the stimuli are presented this many centimeters on either the right or left of the screen (side depends on the trial number, which in turn depends on the congruency of the trial)*** might have to update the meaning of this value for Javascript, might not mean cm anymore, might be like pixels
+                let sideRandomizer = _.sample([-1, 1]);                                                                     // Also note this is a starting point for all trials; it's not inside the for loop, so not saying on each trial we randomize the side; it's just randomizing whether left or right is the side that, for a given participant, gets associated with congruent or incongruent
                 xDistance *= sideRandomizer;                                                                               // This randomizer is used so that, later on, we randomize whether rows above/below a certain number get assigned to either the right or left of the screen, and this randomization will allow this sorting to differ from participant to participant
             }
 
             let selectedImages = Array(mainPics.length);
-            const abigfunc = function (picTotal, trialTotal, topOrBottom){
+            function abigfunc (picTotal, trialTotal, topOrBottom) {
                 let df = topOrBottom(csvInput, picTotal);                                                                              // We're either working with the top of the csv data frame (`mainPics` number of trials) or the bottom end of the data frame (`pracPics`); this way, no two rows are shared by the practice and main trials
                 const incTrials =  Math.trunc(trialTotal * incongruentOverall);
                 const congTrials = trialTotal * congruentOverall;
-                for (i = 0; i < df.length; i++){
+                for (let i = 0; i < df.length; i++){
 
                     if (i < trialTotal) {
 
@@ -139,8 +141,8 @@ async function buildArray(csvInput) {
 
                     // Splits up congruent and incongruent trials into side of screen
                     if (i > congTrials * congruentSideDominance &&                                               // Works with a table that is only congruent trials on the top, followed by incongruent trials; finds cutoff among congruent trials where `congruentSideDominance`...
-                        i < congTrials + incTrials * incongruentSideDominance){                              // ...% of trials are above it, and those trials are on the congruent dominant side; remaining congruent trials and first `incongruentSideDominance` % of...
-                            df[i].xPos = xDistance;                                                                               // ...incongruent trials are assigned to the other (mostly \) half of the screen; finally, remaining incongruent trials are assigned back to the first side and are...
+                        i < congTrials + incTrials * incongruentSideDominance) {                              // ...% of trials are above it, and those trials are on the congruent dominant side; remaining congruent trials and first `incongruentSideDominance` % of...
+                            df[i].Xpos = xDistance;                                                                               // ...incongruent trials are assigned to the other (mostly \) half of the screen; finally, remaining incongruent trials are assigned back to the first side and are...
                     } else {                                                                                                                 // ...among the minority of incongruent trials on their side; the flexibility of this setup allows the percent of overall congruent trials to be orthogonal from the...
                             df[i].Xpos = -xDistance;                                                                             // ...percent of congruent trials on each side (and in turn, each side's number of congruent trials are independent of one another)
                     }
@@ -188,7 +190,7 @@ async function buildArray(csvInput) {
 
             // Loops through the index of the `newRowOrder` list that we're appending to
             // that will ultimately determine the new order of the `mainTrialsDf` df
-            for (aRow = 0; aRow < mainTrialsDf.length; aRow++){
+            for (let aRow = 0; aRow < mainTrialsDf.length; aRow++){
 
                 // This if statement is for resetting the quotas for congruent and
                 // incongruent trials when we've reached the start of a new block
@@ -239,19 +241,19 @@ async function buildArray(csvInput) {
 
             pracTrialsDf = pracTrialsDf.map(obj=> ({ ...obj, Block: -1}));
             pracTrialsDf = _.shuffle(pracTrialsDf);
-            trialArrayLocal = pracTrialsDf.concat(mainTrialsDf)
+            trialArrayLocal = pracTrialsDf.concat(mainTrialsDf);
 
 
-            // For task `Neutral`, swaps the labels on the screen to 5-letter gibberish words
-            // composed only of consonants; selected five letters because that seemed like
-            // somewhere in the middle for the words typically presented, and used the
-            // same-length gibberish for every trial so there was no (and participants
-            // didn't bother to look for a) relationship betewen picture and word length
+            // For task `Neutral`, swaps the labels on the screen between different pictures,
+            // then convert each of these labels to gibberish words composed only of consonants;
+            // So the avg length of the label stays the same, but there's no relationship between
+            // the picture's true label length and the length of label that overlays it
+
             if (task === "Neutral"){
 
                 const alphabet = [...Array(26)].map((x,i)=>String.fromCharCode(i + 97))
                 , remainingLetters = _.difference(alphabet, skipLetters)
-                , randomizedTrialArray = _.shuffle(pracTrialsDf.concat(mainTrialsDf))
+                , randomizedTrialArray = _.shuffle(pracTrialsDf.concat(mainTrialsDf));
 
                 let gibberishWordLength;
 

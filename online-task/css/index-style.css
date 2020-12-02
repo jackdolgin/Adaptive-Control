@@ -20,7 +20,7 @@ button{
   color:#57585b;
 }
 
-#mal-header{
+#lab-header{
     text-align:center;
     max-height:150px;
     max-width:100%;
@@ -28,7 +28,7 @@ button{
     display: inline;
 }
 
-#mal-logo{
+#lab-logo{
     display:block;
     margin-left:auto;
     margin-right:auto;

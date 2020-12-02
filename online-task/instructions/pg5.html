@@ -2,13 +2,37 @@
 <html lang="en" dir="ltr">
     <head></head>
     <body> -->
-    <h3>1. Instructions:</h3>
-    <p>
-         The task, which lasts approximately 30 minutes, involves simply giving voice responses to different word-image combinations that appear on the screen.
-    </p>
-    <p>
-         You’ll see a word on each trial overlaying an image, which sometimes will match the word and sometimes won’t. Your job will be to say what the image is regardless of what the word is, and to do so as quickly as you can. It’s that simple!
-    </p>
+        <h3>Instructions</h3>
+        <p id='instr1'></p>
+        <p id='instr2'></p>
+        <script>
+            (() => {
+                let letterOrWord
+                , sensible
+                , opening
+                , instr1End;
+                if (task === "Neutral") {
+                    letterOrWord = "letter";
+                    sensible = "nonsense characters are";
+                    opening = "You’ll see an image on each trial overlaid by nonsense characters, which are irrelevant and can be ignored.";
+                } else {
+                    letterOrWord = "word";
+                    sensible = "word is";
+                    opening = "You’ll see a word on each trial overlaying an image, which sometimes will match the word and sometimes won’t.";
+                }
+                
+                if (task ==="Predictive_Locations"){
+                    instr1End = " (which will appear on the right sometimes and the left other times)."
+                } else {
+                    instr1End = ".";
+                }
+                
+                document.querySelector("#instr1").innerHTML =
+                    "The task, which lasts approximately 30 minutes, involves simply giving voice responses to different " + letterOrWord + "-image combinations that appear on the screen" + instr1End;
+                document.querySelector("#instr2").innerHTML =
+                    opening + " Your job will be to say what the image is regardless of what the " + sensible + ", and to do so as quickly as you can. It’s that simple!";
+            })();
+        </script>
 <!-- 
     </body>
 </html> -->
