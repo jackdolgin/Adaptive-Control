@@ -43,8 +43,7 @@ async function failLoop(nextFunc, nextParams) {
             }
         }
     })();
-    console.log("nextFunc = " + nextFunc);
-    console.log("nextParams = " + nextParams);
+    
     (failCount <= failMax) ? nextFunc.apply(this, nextParams) : end_exp("early");
 }
 

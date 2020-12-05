@@ -28,7 +28,7 @@ const conditionsPerTask = ["Congruent", "Incongruent"]
 , nonpredictiveSideCongruentSideDominance = .5                                                               // If task is `Neutral` or `Predictive_Blocks` then the sides don't indicate congruency (and...
 , nonpredictiveSideIncongruentSideDominance = .5                                                            // ...actually trials in those tasks all have an `xDistance` of 0 anyways)
 
-, failMax = 4                                                                                        // Max number of fails allowed in practice with annyang before experiment terminates
+, failMax = 6                                                                                        // Max number of fails allowed in practice with annyang before experiment terminates
 
 , trialDuration = {"pre_fixate": 500,
                    "fixate": 1000,
@@ -39,7 +39,11 @@ const conditionsPerTask = ["Congruent", "Incongruent"]
 
 , experimenterEmail = "XXXX@gmail.com"
 
-, hosturl = "https://cdmlab.a2hosted.com?";
+, hosturl = "https://cdmlab.a2hosted.com?"
+
+, audioSaveDirectory = "../../../../../jacks-exp-audio-recordings/"
+
+, sqlTable = 'adaptive_control';
 
 let mainTrials = 50                                                                                                                // Like `actualPics` in `pull-in-csv.js`, this is just a starting point
 

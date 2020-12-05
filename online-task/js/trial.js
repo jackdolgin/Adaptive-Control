@@ -1,4 +1,5 @@
 let trialCounter = 0; // tracks current trial
+const logTime = x => trialArray[trialCounter][x] = window.performance.now();
 const trialBlock = a => trialArray[trialCounter - a].Block;
 
 function pre_fixate(t=trialDuration["pre_fixate"]) {
@@ -8,22 +9,25 @@ function pre_fixate(t=trialDuration["pre_fixate"]) {
         $("#countDisplay").html((trialCounter + 1 - pracTrials) + " / " + (trialArray.length - pracTrials) + " trials");
     }
     
+    logTime('Trial_Start');
     eventTimer.setTimeout(fixate, t);
 }
 
 function fixate() {
+    // save time when the trial started
+    logTime('Fixation_Onset');
+    
     // display fixation
     document.querySelector("#stimText").innerHTML = "+";
     targetSide(0);
     document.querySelector("#stimText").style.visibility = "visible";
     
-    const recordingDuration = trialDuration["fixate"] + trialDuration["post_fixate"] + trialDuration["stimulus"];
-    recordAudio(recordingDuration);
-
     eventTimer.setTimeout(post_fixate, trialDuration["fixate"]);
 }
 
 function post_fixate() {
+    logTime('Fixation_Offset');
+    
     // blank screen after fixation
     document.querySelector("#stimText").innerHTML = "";
 
@@ -31,31 +35,16 @@ function post_fixate() {
 }
 
 function stimulus() {
-    // save time when the trial started
-    trialArray[trialCounter].time_start = window.performance.now();
-
+    logTime('Stimulus_Onset');
+    
     document.querySelector("#stimText").innerHTML =
         trialArray[trialCounter].Label;
 
     let imgdiv = document.querySelector("#stimImage"); // insert trial stimulus image into div
     imgdiv.innerHTML =
-        "<img src='" + trialArray[trialCounter].fileName + "'/>";
+        "<img src='" + trialArray[trialCounter].Image_Path + "'/>";
     
     targetSide(trialArray[trialCounter].Xpos);
-
-    // if (task === "Predictive_Locations") {
-    //     ["#stimText", "#stimImage"].forEach((element) =>
-    //         $(element).css("float",
-    //                         (trialArray[trialCounter].xPos > 0) ? "right": "left"));
-    // }
-    
-    
-
-    // if (task === "Predictive_Locations") {
-    //     if (trialArray[trialCounter].xPos > 0) {
-            
-    //     }
-    // }
 
     imgdiv.style.visibility = "visible";
 
@@ -64,6 +53,8 @@ function stimulus() {
 }
 
 function end_trial() {
+    
+    logTime('Stimulus_Offset');
     
     // blank screen before next trial's fixation
     for (const x of ["stimText", "stimImage"]){
@@ -75,14 +66,11 @@ function end_trial() {
 
     // if there are no more trials end experiment
     if (trialCounter + 1 === trialArray.length) {
-    // if (trialCounter > 15) { // this line is temporary, reinstate the above line when done testing
         end_exp("on time");
     } else if (trialCounter === pracTrials) {
-        console.log("sure");
         instrOnOff("On", "instructionDisplay");
         displayInstructions(9, 10, pre_fixate, [2000,]);
     } else if (trialBlock(0) > trialBlock(1)) {
-        console.log("yep");
         displayInstructions(11, 12, failLoop, [displayInstructions, [13, 13, pre_fixate, [2000,]]]);
     } else {
         checkFullScreen();
@@ -90,13 +78,15 @@ function end_trial() {
 }
 
 function end_exp(x) {
+    
+    stopAndSubmitAudio();
     // typically you would submit the data through php which would automatically trigger the feedback html
-    //submit_data();
+    submit_data();
 
-    if (x === "on time") {
-        // but since the php won't post properly without a server I'll just trigger the html
-         window.open("feedback-letter.html", "_self");
-    }
+    // if (x === "on time") {
+    //     // but since the php won't post properly without a server I'll just trigger the html
+    //      window.open("feedback-letter.html", "_self");
+    // }
 }
 
 function targetSide(x){
@@ -109,6 +99,4 @@ function targetSide(x){
             $(element).removeClass( "target-left" ).addClass( "target-right" );   
         }
     });
-} 
-
-///////////////////////////////////////////////////////////////////////////////////////////
+}

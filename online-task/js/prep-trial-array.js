@@ -121,14 +121,16 @@ async function buildArray(csvInput) {
                 let df = topOrBottom(csvInput, picTotal);                                                                              // We're either working with the top of the csv data frame (`mainPics` number of trials) or the bottom end of the data frame (`pracPics`); this way, no two rows are shared by the practice and main trials
                 const incTrials =  Math.trunc(trialTotal * incongruentOverall);
                 const congTrials = trialTotal * congruentOverall;
-                for (let i = 0; i < df.length; i++){
+                for (let i = 0; i < df.length; i++) {
 
                     if (i < trialTotal) {
 
                         selectedImages[i] = new Image();
                         selectedImages[i].src = folderlocationIPNP + "trimmed/" + df[i].Pic_Num + df[i].Dominant_Response + ".png"; // Preload all of the stimuli pictures into the trial matrix/array; we do this before running any of the trials so we stomach the image loading times on the front end
                         preLoad.yourImages[i] = folderlocationIPNP + "trimmed/" + df[i].Pic_Num + df[i].Dominant_Response + ".png";
-                        df[i].fileName = folderlocationIPNP + "trimmed/" + df[i].Pic_Num + df[i].Dominant_Response + ".png";
+                        df[i].Image_Path = folderlocationIPNP + "trimmed/" + df[i].Pic_Num + df[i].Dominant_Response + ".png";
+                        ['Full_Screen', 'Audio_Connected', 'Audio_Permitted'].forEach(x => df[i][x] = true);
+                        df[i].Sub_Code = Sub_Code;
 
                         if (i < congTrials) {
                             df[i].Label = df[i].Dominant_Response;                                                         // If a trial is congruent, its label is its pic identity; if incongruent, its label is the lead of the pic identity
