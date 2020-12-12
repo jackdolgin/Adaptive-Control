@@ -2,9 +2,15 @@
 <html lang="en" dir="ltr">
     <head></head>
     <body> -->
-        <h3>Instructions</h3>
-        <p id='instr1'></p>
-        <p id='instr2'></p>
+        <h3>
+            Instructions
+        </h3>
+        <p>
+            The task, which lasts approximately 30 minutes, involves simply giving voice responses to different <span id='letterOrWord'></span>-image combinations that appear on the screen<span id='instr1End'></span>
+        </p>
+        <p>
+            <span id='opening'></span> Your job will be to say what the image is regardless of what the <span id='sensible'></span>, and to do so as quickly as you can. It’s that simple!
+        </p>
         <script>
             (() => {
                 let letterOrWord
@@ -27,10 +33,10 @@
                     instr1End = ".";
                 }
                 
-                document.querySelector("#instr1").innerHTML =
-                    "The task, which lasts approximately 30 minutes, involves simply giving voice responses to different " + letterOrWord + "-image combinations that appear on the screen" + instr1End;
-                document.querySelector("#instr2").innerHTML =
-                    opening + " Your job will be to say what the image is regardless of what the " + sensible + ", and to do so as quickly as you can. It’s that simple!";
+                document.querySelector("#letterOrWord").innerHTML = letterOrWord;
+                document.querySelector("#instr1End").innerHTML = instr1End;
+                document.querySelector("#opening").innerHTML = opening;
+                document.querySelector("#sensible").innerHTML = sensible;
             })();
         </script>
 <!-- 

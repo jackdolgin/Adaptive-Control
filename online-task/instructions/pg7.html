@@ -3,20 +3,19 @@
     <head></head>
     <body> -->
         <h3>Example 2</h3>
-        <p id='ex2Resp'></p>
-        <img id='instrImage2'/>
+        <p id='ex2Resp'>In this example, you would say <strong>"Triangle"</strong></p>
+        <img id='instrImage2' class='instrImage'/>
         <script>
             (() => {
-                let textEx2 = 'In this example, you would say <strong>"Triangle"</strong>'
-                , overlaid;
+                let textEx2, overlaid;
                 if (task === "Neutral") {
                     overlaid = "msplb";
-                    textEx2 += ".</p>";
+                    textEx2 = ".";
                 } else {
                     overlaid = "square";
-                    textEx2 += " since that’s what the image is.</p>";
+                    textEx2 = " since that’s what the image is.";
                 }
-                document.querySelector("#ex2Resp").innerHTML = textEx2;
+                document.querySelector("#ex2Resp").innerHTML += textEx2;
                 document.getElementById('instrImage2').src =
                     '../images/instructions/' + overlaid + '-triangle.png';
             })();

@@ -9,7 +9,7 @@
     $data_array = json_decode($output['data'], true);
     $table = $output['table'];
     
-    try {
+    // try {
       $conn = new PDO("mysql:host=$servername;port=$port;dbname=$dbname", $username, $password);
       $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
       // First stage is to get all column names from the table and store
@@ -44,13 +44,4 @@
         }
         $insertstmt->execute();
       }
-      echo '{"success": true}';
-    } catch(PDOException $e) {
-      echo '{"success": false, "message": ' . $e->getMessage();
-    }
-    $conn = null;
-
-    //direct to questionnaires
-    // header('Location: feedback-letter.html');
-    // exit;
 ?>

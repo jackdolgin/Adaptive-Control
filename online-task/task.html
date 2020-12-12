@@ -1,70 +1,78 @@
 <!DOCTYPE html>
 <html dir="ltr" lang="en-US">
 
-<head>
-
-    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <meta name="J. Dolgin" content="Typing Game" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <!-- Stylesheets
-	============================================= -->
-    <link rel="stylesheet" href="css/task.css" type="text/css" />
-
-    <!--- Javascript on page load
-	============================================= -->
-    <script type="text/javascript">
-
-    </script>
-    <!-- Document Title
-	============================================= -->
-    <title>Typing Game</title>
-
-</head>
-
-<body class="bg-black">
-    <div id="contentDisplay">
-        <div id="top" class="initHidden" style="width: 100%">
-            <h3 id="countDisplay" style="float: left; width: 16.66%"></h3>
-            <h3 style="float: left; width: 66.66%; text-align: center" id="reminder"></h3>
-            <div style="width: 16.66%; clear: left"></div>
+    <head>
+    
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="J. Dolgin" content="Picture Naming Game" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
+        <!-- Stylesheets
+    	============================================= -->
+        <link rel="stylesheet" href="css/task.css" type="text/css" />
+    
+        <!--- Javascript on page load
+    	============================================= -->
+        <script type="text/javascript">
+    
+        </script>
+        <!-- Document Title
+    	============================================= -->
+        <title>Picture Naming Game</title>
+        
+        <!-- default favicon -->
+        <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
+    
+        <!-- wideley used favicon -->
+        <link rel="icon" href="../images/favicon.png" sizes="32x32" type="image/png">
+    
+    </head>
+    
+    <body class="bg-black">
+        <div id="contentDisplay">
+            <div id="top" class="initHidden" style="width: 100%">
+                <h3 id="countDisplay" style="float: left; width: 16.66%"></h3>
+                <h3 style="float: left; width: 66.66%; text-align: center" id="reminder"></h3>
+                <div style="width: 16.66%; clear: left"></div>
+            </div>
+            <div id ="mainDisplay" class="flexCenter noSelect ">
+                <div id="loading" class="initHidden">
+                    <p> Please wait while the images are loading </p>
+                    <p id="progress">0%</p>
+                </div>
+                <div id="instructionDisplay" class="book">
+                </div>
+                <div id="targetDisplay" class="initHidden">
+                    <div id="stimText"></div>
+                    <div id="stimImage"></div>
+                </div>
+                <div id="warning" class="initHidden"></div>
+            </div>
         </div>
-        <div id ="mainDisplay" class="flexCenter noSelect ">
-            <div id="loading" class="initHidden">
-                <p> Please wait while the images are loading </p>
-                <p id="progress">0%</p>
-            </div>
-            <div id="instructionDisplay" class="book">
-            </div>
-            <div id="targetDisplay" class="initHidden">
-                <div id="stimText"></div>
-                <div id="stimImage"></div>
-            </div>
-            <div id="warning" class="initHidden"></div>
-        </div>
-    </div>
-
-    <!-- Javascript before page load
-    ============================================== -->
-
-    <!-- external JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/gh/nbrosowsky/online-psychology-demos@b64710331e704847af0156a22848407d70e0bb21/face-inversion/js/imagePreLoader.min.js" integrity="sha384-JmJKpneOGjoxbuvMq20yGkYSBWdeLhU6PqoizV54gdtA5IfgLQS5lKPyT0a6dmKI" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/gh/nbrosowsky/simple-stroop-demo@5ae0637965f47548fdc71000d520de8dcc00ce21/js/eventTimer.min.js" integrity="sha384-1Hp7RFGyB81Oc9NUv7bFiI8XOFSfmXmiAQ4B1gAbli0bVwZV33cSm+uIVAJ0KQRc" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.10.2/underscore-min.js" integrity="sha512-HKvDCFVKg8ZPGjecy6on7UECEpE76Y86h3GaE4JMCz+deFWdjcW/tWnh0hCfaBvURvlOa9f5CNVzt7EFkulYbw==" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.2.0/papaparse.min.js" integrity="sha512-rKFvwjvE4liWPlFnvH4ZhRDfNZ9FOpdkD/BU5gAIA3VS3vOQrQ5BjKgbO3kxebKhHdHcNUHLqxQYSoxee9UwgA==" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js" integrity="sha512-FRllqoDevM/yUYKzCe8K8qvyou3LAsBLSuKYvLSoAQLo70wWTSU6KSi110dXOpEIW8+ehByraYPC188htrPnjw==" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/screenfull.js/5.0.2/screenfull.min.js" integrity="sha512-Xsp2RUVnPbF+7nqthvDZO1LGOqTHuR89rYGlbeHM0G76uiv5VwLLRs31tptp5/bzlKod7Zui1O3mjRX5jzYZ4Q==" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/gh/muaz-khan/DetectRTC@master/DetectRTC.min.js" integrity="sha384-5+XWMyPqzvNUIFcFik6t/79MX8L+6MW/TScaxsdq5duP3a6OtziZIaeDr7uhrwCh" crossorigin="anonymous"></script>
-
-    <!-- custom JS -->
-    <script src="js/save-data.js"></script>
-    <script src="js/config.js"></script>
-    <script src="js/checks.js"></script>
-    <script src="js/record-audio.js"></script>
-    <script src="js/prep-trial-array.js"></script>
-    <script src="js/speech-recognition.js"></script>
-    <script src="js/instructions.js"></script>
-    <script src="js/trial.js"></script>
-    <script src="js/run-online-task.js"></script>
-</body>
+    
+        <!-- Javascript before page load
+        ============================================== -->
+    
+        <!-- external JS -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/gh/nbrosowsky/online-psychology-demos@b64710331e704847af0156a22848407d70e0bb21/face-inversion/js/imagePreLoader.min.js" integrity="sha384-JmJKpneOGjoxbuvMq20yGkYSBWdeLhU6PqoizV54gdtA5IfgLQS5lKPyT0a6dmKI" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/gh/nbrosowsky/simple-stroop-demo@5ae0637965f47548fdc71000d520de8dcc00ce21/js/eventTimer.min.js" integrity="sha384-1Hp7RFGyB81Oc9NUv7bFiI8XOFSfmXmiAQ4B1gAbli0bVwZV33cSm+uIVAJ0KQRc" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.10.2/underscore-min.js" integrity="sha512-HKvDCFVKg8ZPGjecy6on7UECEpE76Y86h3GaE4JMCz+deFWdjcW/tWnh0hCfaBvURvlOa9f5CNVzt7EFkulYbw==" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.2.0/papaparse.min.js" integrity="sha512-rKFvwjvE4liWPlFnvH4ZhRDfNZ9FOpdkD/BU5gAIA3VS3vOQrQ5BjKgbO3kxebKhHdHcNUHLqxQYSoxee9UwgA==" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js" integrity="sha512-FRllqoDevM/yUYKzCe8K8qvyou3LAsBLSuKYvLSoAQLo70wWTSU6KSi110dXOpEIW8+ehByraYPC188htrPnjw==" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/screenfull.js/5.0.2/screenfull.min.js" integrity="sha512-Xsp2RUVnPbF+7nqthvDZO1LGOqTHuR89rYGlbeHM0G76uiv5VwLLRs31tptp5/bzlKod7Zui1O3mjRX5jzYZ4Q==" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/gh/muaz-khan/DetectRTC@master/DetectRTC.min.js" integrity="sha384-5+XWMyPqzvNUIFcFik6t/79MX8L+6MW/TScaxsdq5duP3a6OtziZIaeDr7uhrwCh" crossorigin="anonymous"></script>
+    
+        <!-- custom JS -->
+        <script src="js/save-data.js"></script>
+        <script src="js/config.js"></script>
+        <script src="js/checks.js"></script>
+        <script src="js/record-audio.js"></script>
+        <script src="js/prep-trial-array.js"></script>
+        <script src="js/speech-recognition.js"></script>
+        <script src="js/instructions.js"></script>
+        <script src="js/trial.js"></script>
+        <script src="js/run-online-task.js"></script>
+    </body>
+    
+</html>

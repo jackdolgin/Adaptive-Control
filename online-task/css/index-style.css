@@ -1,37 +1,82 @@
-div,button{
-  display:none;
-  visibility:hidden;
+div, button, #form-thanks, #feedback-form {font-family: Verdana, sans-serif;}
 
-  font-family: Verdana, sans-serif;
-  font-size: 16px;
+div, button, #EOS, #form-thanks {font-size:16pt;}
+
+p, h1, h2, h3, h4, h5, ul {color:#57585b;}
+
+body {
+    padding: 40px 100px 10px 100px;
+    background-color:#ffffff;
 }
 
-p,h1,h2,h3,h4,h5{color:#57585b;}
-
-body{
-  padding: 40px 100px 10px 100px;
-  background-color:#ffffff;
+button, #info-consent-letter, #form-thanks, #plz-answer {
+    display: none;
+    visibility: hidden; 
 }
 
-button{
-  /*top right bottom left*/
-  padding: 8px 12px 8px 12px;
-  text-transform:uppercase;
-  color:#57585b;
+#info-consent-letter{
+    margin: auto;
+    width: 80%;
+    align-items: center;
 }
 
-#lab-header{
-    text-align:center;
+button {
+    /*top right bottom left*/
+    padding: 8px 12px 8px 12px;
+    text-transform:uppercase;
+    color:#57585b;
+}
+
+#lab-header {
     max-height:150px;
     max-width:100%;
     background-color:white;
     display: inline;
 }
 
-#lab-logo{
+#lab-logo {
+    max-height:100%;
+    max-width:100%;
+    width: 200px
+}
+
+select:required:invalid {color: gray;}
+
+#dem-submit{margin-top: 90px;}
+
+#dem-submit, #submit-form {
+    font-size: 12px;
+    padding: 8px 20px 8px 20px;
+}
+
+.consent-btn, #dem-submit, #submit-form{
+    display: inline-block;
+    visibility: visible;    
+}
+
+#plz-answer {color: red;}
+
+#form-thanks, #EOS, #feedback-form, #lab-header, #submit-form {text-align: center;}
+
+#share-ur-thoughts{
+    margin: auto;
+    width:50%;
+    font-size: 14pt;
+}
+
+#lab-logo, #lab-logo-form{
     display:block;
     margin-left:auto;
     margin-right:auto;
-    max-height:100%;
-    max-width:100%;
 }
+
+#lab-logo-form{
+    max-height:15%;
+    max-width:15%;
+}
+
+#provide-email{margin-bottom: 50px;}
+
+#Name, #Email {margin-bottom: 20px;}
+
+textarea {font-family: sans-serif;}

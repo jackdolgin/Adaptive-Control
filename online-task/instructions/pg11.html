@@ -2,10 +2,10 @@
 <html lang="en" dir="ltr">
     <head></head>
     <body> -->
-        <p id='rest'></p>
+        <p>You’ve reached break <span id='rest'></span> of <span id='rests'></span>. This break is self-timed, so whenever you’re ready press NEXT to continue to the audio checkpoint (and subsequently to the remaining trials).</p>
         <script>
-            document.querySelector("#rest").innerHTML =
-                "You’ve reached break " + (trialBlock(0) - 1) + " of " + (blockSequence.length - 1) + ". This break is self-timed, so whenever you’re ready press NEXT to continue to the audio checkpoint (and subsequently to the remaining trials).";
+            document.querySelector("#rest").innerHTML = (trialBlock(0) - 1);
+            document.querySelector("#rests").innerHTML = (blockSequence.length - 1);
         </script>
 <!-- 
     </body>

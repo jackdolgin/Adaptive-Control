@@ -5,10 +5,11 @@
         <p>
             Welcome to the main portion of the experiment! It’ll work just like the practice trials, only there will be many more trials.
         </p>
-        <p id='startMain'></p>
+        <p>
+            The trials will be split among <span id='startMain'></span> breaks, and this main portion of the study should total no more than 25 minutes (probably less).
+        </p>
         <script>
-            document.querySelector("#startMain").innerHTML =
-                "The trials will be split among " + (blockSequence.length - 1) + " breaks, and this main portion of the study should total no more than 25 minutes (probably less).";
+            document.querySelector("#startMain").innerHTML = (blockSequence.length - 1);
         </script>
 <!-- 
     </body>

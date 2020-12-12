@@ -73,7 +73,7 @@ function proceedToTask(){
 }
 
 function finishedLoading() {
-    failLoop(displayInstructions, [4, 8, pre_fixate, [2000,]]);
+    failLoop("practice", displayInstructions, [4, 8, pre_fixate, [2000,]]);
 }
 
 function instrOnOff(x, y) {

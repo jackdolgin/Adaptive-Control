@@ -1,4 +1,14 @@
 const task = _.sample(possibleTasks);
+// create a random subject code
+//set participant values		
+function getRandomString(length, chars) {
+    var result = '';
+    for (var i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
+    return result;
+}
+
+const Sub_Code = getRandomString(8, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+
 
 const loadCSV = new Promise(
     (resolve, reject) => {

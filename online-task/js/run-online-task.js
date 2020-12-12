@@ -1,13 +1,8 @@
-let instrPages = Array("<div id='pg1' class=' page'></div>");
-let instrPagesConcat = instrPages.concat(Array(13 - 2 + 1).fill(2).map((x, y) =>
-    'pg' + (x + y)));
-instrPagesConcat = instrPagesConcat.reduce((x, y) =>
-    x + "<div id='" + y + "' class=' page'></div>");
-$("#instructionDisplay").html(
-    instrPagesConcat +
-    '<div class="pgButtons"><button id="pageDown" class="button-blue" style="float: left;">BACK</button><button id="pageUp" class="button-blue" style="float: right; margin-right: 4%">NEXT</button><button id="beginExp" class="button-green " style="float: right; margin-right: 4%">START</button></div>'
-);
-
+const instrPages = (Array(13)
+                    .fill(1)
+                    .map((x, y) => 'pg' + (x + y)))
+                .reduce((x, y) =>
+    (x + "<div id='" + y + "' class=' page'></div>"), '');
 
 async function startTask() {
     const csvIngested = await loadCSV;
@@ -24,6 +19,11 @@ async function startTask() {
     
 }
 (async () => {
+    $("#instructionDisplay").html(
+      instrPages +
+        '<div class="pgButtons"><button id="pageDown" class="button-blue" style="float: left;">BACK</button><button id="pageUp" class="button-blue" style="float: right; margin-right: 4%">NEXT</button><button id="beginExp" class="button-green " style="float: right; margin-right: 4%">START</button></div>'
+    );
+    
     if (localStorage.getItem("consented") === "yes") {
         await startTask();
     }

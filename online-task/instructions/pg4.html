@@ -3,13 +3,14 @@
     <head></head>
     <body> -->
         <h3>Success</h3>
-        <p id="futureCheckpoints"></p>
+        <p>
+            Well done! There will be <span id="futureCheckpoints"></span> breaks during the main portion of the task (which you’ll hear more about briefly), and each will contain another one of these audio checks.
+        </p>
         <p>
             If you’re still interested in participating, you can now read the instructions for the task.
         </p>
         <script>
-            document.querySelector("#futureCheckpoints").innerHTML =
-                 "Well done! There will be " + (blockSequence.length - 1) + " breaks during the main portion of the task (which you’ll hear more about briefly), and each will contain another one of these audio checks. It will work the same way each time, but again you will have to successfully complete each checkpoint in one of the " + (failMax + 1) + " allotted chances in order to be paid.";
+            document.querySelector("#futureCheckpoints").innerHTML = (blockSequence.length - 1);
         </script>
 <!-- 
     </body>

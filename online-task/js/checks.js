@@ -33,8 +33,7 @@ function checkFullScreen() {
             document.querySelector("#warning").innerHTML =
                 startingText + "Since this has now happened " + (screenSizePromptCount + 1) + " times, you will not be able to complete the rest of the study. You can reach out to " + experimenterEmail + "  for any questions or concerns.";
         }
-      
-        // end_trial("early"); reinstantiate this
+
     }
 }
 

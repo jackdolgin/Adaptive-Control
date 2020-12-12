@@ -14,7 +14,7 @@ const conditionsPerTask = ["Congruent", "Incongruent"]
 
 , possibleTasks = ["Neutral", "Predictive_Blocks", "Predictive_Locations"]
 
-, blockSequence = ["A", "B", "A", "B"]                                                                                      //  Sets up not only the order of the blocks (like A-B-A-B), but also allows for a disproportionate number of congruent or incongruent trials overall if we opted for an odd number of blocks (e.g. A-A-B-A-B), and also implicitly dictates how many blocks will be in the task
+, blockSequence = ["A", "B"]                                                                                      //  Sets up not only the order of the blocks (like A-B-A-B), but also allows for a disproportionate number of congruent or incongruent trials overall if we opted for an odd number of blocks (e.g. A-A-B-A-B), and also implicitly dictates how many blocks will be in the task
 
 , predictiveBlockCongruentBlockDominance = .75                                                               // Because in our study these two variables are equal, we could have combined these variables into one; however...
 , predictiveBlockIncongruentBlockDominance = .75                                                             // ...this set-up accomodates specifying different ratios for congruent- vs incongruent-dominant blocks
@@ -33,7 +33,7 @@ const conditionsPerTask = ["Congruent", "Incongruent"]
 , trialDuration = {"pre_fixate": 500,
                    "fixate": 1000,
                    "post_fixate": 500,
-                   "stimulus": 2000}
+                   "stimulus": 2500}
 
 , speechRecognitionDuration = 10
 
@@ -41,11 +41,13 @@ const conditionsPerTask = ["Congruent", "Incongruent"]
 
 , hosturl = "https://cdmlab.a2hosted.com?"
 
-, audioSaveDirectory = "../../../../../jacks-exp-audio-recordings/"
+, mainSQLTable = 'adaptive_control'
 
-, sqlTable = 'adaptive_control';
+, demographicsSQLTable = 'adaptive_control_demographics'
 
-let mainTrials = 50                                                                                                                // Like `actualPics` in `pull-in-csv.js`, this is just a starting point
+, feedbackSQLTable = 'adaptive_control_feedback';
+
+let mainTrials = 14                                                                                                                // Like `actualPics` in `pull-in-csv.js`, this is just a starting point
 
 , numScreenSizeWarnings = 3
 

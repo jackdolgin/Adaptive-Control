@@ -7,26 +7,34 @@ async function checkSpoken() {
     return spokenCorrect;
 }
 
-async function failLoop(nextFunc, nextParams) {
+async function failLoop(stage, nextFunc, nextParams) {
     let failCount = 0
-    , matching
-    , practicePass
-    , tries;
+    , matching, practicePass, tries, triesWarning;
     
     targetSide(0);
-    document.querySelector("#stimText").innerHTML =
-        practiceWords.reduce((x, y) => x + '<br>' + y);
+    
+    eventTimer.setTimeout(() => {
+        document.querySelector("#stimText").innerHTML =
+            practiceWords.reduce((x, y) => x + '<br>' + y);
+    }, 500);
     
     await (async () => {
         while (failCount <= failMax) {
             practicePass = await new Promise(
                 (resolve) => {
                     if (failCount > 0) {
-                        tries = (failMax + 1 - failCount > 1) ? " tries" : " try" ;
+                        if (stage === "break") {
+                            triesWarning = "";
+                            failCount--;
+                        }
+                        else {
+                            tries = (failMax + 1 - failCount > 1) ? " tries" : " try" ;
+                            triesWarning = "You still have " + (failMax + 1 - failCount) + tries + " left! ";
+                        }
                         document.querySelector("#warning").innerHTML =
-                            "<p>It looks like that attempt did not work. You still have " + (failMax + 1 - failCount) + tries + " left! Remember to avoid filler words if you can help it, to speak slowly, and to leave a second or two between each word.</p><button id='removeWarning' class='button-beige'>Try Again</button>";
+                            "<p>It looks like that attempt did not work. " + triesWarning + "Remember to avoid filler words if you can help it, to speak slowly, and to leave a second or two between each word.</p><button id='removeWarning' class='button-beige'>Try Again</button>";
                         instrOnOff("On", "warning");
-                        document.querySelector("#removeWarning").addEventListener("click", async function() { // might not need the async word here, check
+                        document.querySelector("#removeWarning").addEventListener("click", function() {
                             instrOnOff("Off", "warning");
                             resolve(checkSpoken());
                         });
@@ -44,7 +52,7 @@ async function failLoop(nextFunc, nextParams) {
         }
     })();
     
-    (failCount <= failMax) ? nextFunc.apply(this, nextParams) : end_exp("early");
+    (failCount <= failMax) ? nextFunc.apply(this, nextParams) : audioCheckFailed();
 }
 
 async function hearWords() {
@@ -75,4 +83,10 @@ async function hearWords() {
             }, speechRecognitionDuration * 1000);
         }
     )
+}
+
+function audioCheckFailed() {
+        document.querySelector("#warning").innerHTML =
+            "<p>Since the automated system still could not successfully process what you said, you will not be able to complete the study. You can reach out to " + experimenterEmail + "  for any questions or concerns. Sorry about that!</p>";
+        instrOnOff("On", "warning");
 }

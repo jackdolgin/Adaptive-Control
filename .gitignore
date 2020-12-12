@@ -3,4 +3,4 @@ images/IPNP/original
 images/IPNP/trimmed
 images/instructions
 Authentication_File.json
-online-task/database_config.php
+online-task/php/database_config.php

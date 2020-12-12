@@ -4,12 +4,15 @@
     <body> -->
         <h3>Example 1</h3>
         <p>For instance, in the example below, you would say <strong>"Circle"</strong> into the microphone.</p>
-        <img id='instrImage1'/>
+        <img id='instrImage1' class='instrImage'/>
         <script>
             (() => {        
                 let overlaid = (task === "Neutral") ? "vpfs" : "circle";
-                document.getElementById('instrImage1').src =
+                document.getElementById("instrImage1").src =
                     '../images/instructions/' + overlaid + '-circle.png';
+                if (task ==="Predictive_Locations") {
+                    $('.instrImage').css('margin', 0);
+                }
             })();
         </script>
 <!-- 

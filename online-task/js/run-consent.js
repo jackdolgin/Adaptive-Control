@@ -20,8 +20,7 @@
     } else if (!localSettings[3]) {
         rejectPreConsent("<p>It appears that your computer is not currently connected to an audio input. We’ll need to record your voice during the task to pick up your answers, so it is required that you have a high-quality audio input into your computer (native to some laptops, for others may require an external microphone or headphones with microphone capabilities).</p>");
     } else {
-        document.querySelector("#info-consent-letter").style.display = "block";
-        document.querySelector("#info-consent-letter").style.visibility = "visible";
+        document.getElementById("info-consent-letter").style.cssText = "display: inline-block; visibility: visible;";
 
         document.querySelector("#no-consent-btn").addEventListener("click",
             function() {
@@ -40,9 +39,7 @@
 function rejectPreConsent(text){
     document.querySelector("#cancel").innerHTML = text;
     
-    document.querySelector("#cancel").style.display = "block";
-    document.querySelector("#cancel").style.visibility = "visible";
-    document.querySelector("#info-consent-letter").style.display = "none";
-    document.querySelector("#no-consent-btn").style.display = "none";
-    document.querySelector("#yes-consent-btn").style.display = "none";
+    const els = ["info-consent-letter", "no-consent-btn", "yes-consent-btn"];
+    els.forEach((element) =>
+        document.querySelector("#" + element).style.display = "none");
 }

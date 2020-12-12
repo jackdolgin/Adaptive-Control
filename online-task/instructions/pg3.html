@@ -6,10 +6,12 @@
         <p>
             We will use an automated system to process your voice responses, so you’ll need to enunciate when you speak and avoid using filler words like "Um".
         </p>
-        <p id="checkPointInstructions"></p>
+        <p>
+            Let’s practice! Please read aloud each of the three words you see on the next screen, in order, taking a second or two of a pause between words. You’ll have <span id="speechRecognitionDuration"></span> seconds, and if it doesn’t get processed correctly you’ll have <span id='failMax'></span> more chances.
+        </p>
         <script>
-            document.querySelector("#checkPointInstructions").innerHTML =
-                "Let’s practice! Please read aloud each of the three words you see on the next screen, in order, taking a second or two of a pause between words. You’ll have " + speechRecognitionDuration + " seconds, and if it doesn’t get processed correctly you’ll have " + failMax + " more chances.";
+            document.querySelector("#speechRecognitionDuration").innerHTML = speechRecognitionDuration;
+            document.querySelector("#failMax").innerHTML = failMax;
         </script>
 <!-- 
     </body>
