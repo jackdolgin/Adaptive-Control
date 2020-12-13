@@ -4,3 +4,5 @@ images/IPNP/trimmed
 images/instructions
 Authentication_File.json
 online-task/php/database_config.php
+*.wav
+.Rproj.user

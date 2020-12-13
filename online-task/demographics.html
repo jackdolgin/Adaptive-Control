@@ -4,20 +4,17 @@
         <meta charset="utf-8">
     
         <!-- default favicon -->
-        <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
+        <link rel="shortcut icon" href="../images/lab/favicon.ico" type="image/x-icon">
     
         <!-- wideley used favicon -->
-        <link rel="icon" href="../images/favicon.png" sizes="32x32" type="image/png">
+        <link rel="icon" href="../images/lab/favicon.png" sizes="32x32" type="image/png">
     
         <title>The Egner Lab</title>
     
         <link rel='stylesheet' href='css/index-style.css'>
         
         <style>
-            p {
-                font-weight: bold;
-                padding-top: 15px;
-            }
+            p {font-weight: bold; padding-top: 15px;}
         </style>
 
     </head>
@@ -34,7 +31,7 @@
       	</select>
     
       	<p>Age: (leave blank if you do not wish to respond)</p>
-      	<input id="Age" name="Age" value=""></input>
+      	<input id="Age" name="Age" value=""/>
     
       	<p>Ethnicity:</p>
       	<select id="Ethnicity" required>
@@ -58,7 +55,7 @@
       		<option value="NA">Do not wish to respond</option>
       	</select>
       	
-      	<p>Which, if any, country your accent best reflects (useful for processing your voice responses):</p>
+      	<p>Which, if any, country your accent best reflects (so our automator can best classify your verbal responses):</p>
       	<select id="Nationality" required>
       	</select>
       	<br>
@@ -69,7 +66,7 @@
     
         <script src="js/save-data.js"></script>
         <script src="js/config.js"></script>
-        <script src="js/demographics.js"></script>
+        <script src="js/run-demographics.js"></script>
       	
     </body>
 </html>
