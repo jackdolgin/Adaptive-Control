@@ -141,6 +141,7 @@ async function buildArray(csvInput) {
                         df[i].Image_Path = folderlocationIPNP + "trimmed/" + df[i].Pic_Num + df[i].Dominant_Response + ".png";
                         ['Full_Screen', 'Audio_Connected', 'Audio_Permitted'].forEach(x => df[i][x] = true);
                         df[i].Sub_Code = Sub_Code;
+                        df[i].Task = task;
 
                         if (i < congTrials) {
                             df[i].Label = df[i].Dominant_Response;                                                         // If a trial is congruent, its label is its pic identity; if incongruent, its label is the lead of the pic identity
@@ -154,9 +155,9 @@ async function buildArray(csvInput) {
                     // Splits up congruent and incongruent trials into side of screen
                     if (i > congTrials * congruentSideDominance &&                                               // Works with a table that is only congruent trials on the top, followed by incongruent trials; finds cutoff among congruent trials where `congruentSideDominance`...
                         i < congTrials + incTrials * incongruentSideDominance) {                              // ...% of trials are above it, and those trials are on the congruent dominant side; remaining congruent trials and first `incongruentSideDominance` % of...
-                            df[i].Xpos = xDistance;                                                                               // ...incongruent trials are assigned to the other (mostly \) half of the screen; finally, remaining incongruent trials are assigned back to the first side and are...
+                            df[i].Task_Side = xDistance;                                                                               // ...incongruent trials are assigned to the other (mostly \) half of the screen; finally, remaining incongruent trials are assigned back to the first side and are...
                     } else {                                                                                                                 // ...among the minority of incongruent trials on their side; the flexibility of this setup allows the percent of overall congruent trials to be orthogonal from the...
-                            df[i].Xpos = -xDistance;                                                                             // ...percent of congruent trials on each side (and in turn, each side's number of congruent trials are independent of one another)
+                            df[i].Task_Side = -xDistance;                                                                             // ...percent of congruent trials on each side (and in turn, each side's number of congruent trials are independent of one another)
                     }
                 }
 

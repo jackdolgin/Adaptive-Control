@@ -17,7 +17,7 @@ function pre_fixate(t=trialDuration["pre_fixate"]) {
 
 function fixate() {
     // save time when the trial started
-    logTime('Fixation_Onset');
+    logTime('Fix_Onset');
     
     // display fixation
     document.querySelector("#stimText").innerHTML = "+";
@@ -28,7 +28,7 @@ function fixate() {
 }
 
 function post_fixate() {
-    logTime('Fixation_Offset');
+    logTime('Fix_Offset');
     
     // blank screen after fixation
     document.querySelector("#stimText").innerHTML = "";
@@ -37,7 +37,7 @@ function post_fixate() {
 }
 
 function stimulus() {
-    logTime('Stimulus_Onset');
+    logTime('Stim_Onset');
     
     document.querySelector("#stimText").innerHTML =
         trialArray[trialCounter].Label;
@@ -46,7 +46,7 @@ function stimulus() {
     imgdiv.innerHTML =
         "<img src='" + trialArray[trialCounter].Image_Path + "'/>";
     
-    targetSide(trialArray[trialCounter].Xpos);
+    targetSide(trialArray[trialCounter].Task_Side);
 
     imgdiv.style.visibility = "visible";
 
@@ -56,7 +56,8 @@ function stimulus() {
 
 function end_trial() {
     
-    logTime('Stimulus_Offset');
+    trialArray[trialCounter]["Trial"] = trialCounter - pracTrials + 1;
+    logTime('Stim_Offset');
     
     // blank screen before next trial's fixation
     for (const x of ["stimText", "stimImage"]){

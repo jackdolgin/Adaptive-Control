@@ -8,16 +8,17 @@ devtools::source_gist("746685f5613e01ba820a31e57f87ec87")
 no_cores <- availableCores() - 1
 plan(multicore, workers = no_cores)
 
-"Authentication_File.json" %T>%
+
+here("Authentication_File.json") %T>%
   gl_auth %>%
   gcs_auth
 
-mypath <- here("Data")
+mypath <- here("online-task", "analyses", "Data")
 
 
 predictive_context <- function(mydf, either_block_or_side, relevant_task){
   mydf %>%
-    group_by(Participant, !!either_block_or_side) %>%
+    group_by(Sub_Code, !!either_block_or_side) %>%
     mutate(!!paste0(quo_name(either_block_or_side), "_Bias") := 
              case_when(
                Task != relevant_task ~ NA_character_,
@@ -26,40 +27,41 @@ predictive_context <- function(mydf, either_block_or_side, relevant_task){
     )
 }
 
-prep_data <- dir_ls(mypath, glob = "*.csv", recurse = TRUE) %>%
-  map_dfr(fread) %>%
-  filter(Trial > 0) %>%
-  select(-Date) %>%
-  left_join(fread("IPNP_spreadsheet_synonyms.csv")) %>%
-  group_by(Participant) %>%
+prep_data <- "online-task/analyses/Data/Task_Data.csv" %>%
+  fread %>%
+  filter(Block > 0) %>%
+  left_join(fread(here("images", "IPNP", "IPNP_spreadsheet_synonyms.csv"))) %>%
+  group_by(Sub_Code) %>%
   mutate(
-    Congruency = ifelse(Picture_Identity == Picture_Label,
-                        "Congruent", "Incongruent"),
-    End_recording = ifelse(
-      lead(Fix_Offset) > Stim_Onset + 58 | row_number() == n(),
-      Stim_Onset + 58,
-      lead(Fix_Offset, default = last(Fix_Offset) + 58))) %>%
-  predictive_context(quo(Block), "Predictive Blocks") %>%
-  predictive_context(quo(Task_Side), "Predictive Locations") %>%
+    across(c(Fix_Onset, Fix_Offset, Stim_Onset, Stim_Offset, Trial_Start),
+           . %>% subtract(min(Trial_Start)) %>% divide_by(1000)),
+    End_recording = 
+      ifelse(
+        lead(Fix_Offset) > Stim_Onset + 58 | row_number() == n(),
+        Stim_Onset + 58,
+        lead(Fix_Offset, default = last(Fix_Offset) + 58))) %>%
+  predictive_context(quo(Block), "Predictive_Blocks") %>%
+  predictive_context(quo(Task_Side), "Predictive_Locations") %>%
   ungroup() %>%
-  mutate_at(vars(Synonyms), ~paste(
-    ., ifelse(Picture_Identity == Picture_Label,
-              Picture_Label,
-              paste(Picture_Identity, Picture_Label, sep = ", "))))
+  mutate(across(c(Synonyms),
+         ~ifelse(Dominant_Response == Label,
+                      Label,
+                      paste(Dominant_Response, Label, sep = ", "))))
 
 pull_in_from_google <- prep_data %>%
   pmap_df(function(Stim_Onset, Trial, End_recording,
-                   Participant, Synonyms, ...){
+                   Sub_Code, Synonyms, ...){
     
-    audio_path <- path(mypath, Participant, "audio",
+    audio_path <- path(mypath, Sub_Code, "audio",
                        paste0("Trial_", Trial, ".wav"))
     
-    readWave(dir_ls(path(mypath, Participant, "audio", "full_recording"),
+    readWave(dir_ls(path(mypath, Sub_Code, "audio", "full_recording"),
                     glob = "*.wav"),
              from = Stim_Onset, to = End_recording, units = "seconds") %>%
       writeWave(audio_path, extensible = FALSE)
     
     transcribed_list <- gl_speech(audio_path, sampleRateHertz = 44100L,
+                                  # languageCode = _________        need to fill this in still
                                   speechContexts =
                                     list(phrases = strsplit(Synonyms, ',') %>%
                                            unlist %>%
@@ -71,7 +73,7 @@ pull_in_from_google <- prep_data %>%
       transcribed_list$transcript %>%
         mutate_at(vars(transcript), trimws) %>%
         mutate(
-          Participant,
+          Sub_Code,
           Trial,
           preciseStartTime = pluck(precise_timing, first, "start"),
           preciseEndTime = pluck(precise_timing, last, "end"))
@@ -88,16 +90,16 @@ pull_in_from_google2 <- read_csv("pull_in_from_google.csv") %>%
             across(preciseStartTime, min),                                      # out multiple rows for $transcript
             across(preciseEndTime, max)) %>%                                    
   ungroup() %>%
-  mutate_at(vars(Picture_Identity, Picture_Label, Synonyms, transcript),
+  mutate_at(vars(Dominant_Response, Label, Synonyms, transcript),
             ~str_remove_all(., " ") %>% tolower) %>%
   mutate(Accuracy = pmap_lgl(., function(
-    Synonyms, transcript, Picture_Label, Congruency, ...){
+    Synonyms, transcript, Label, Congruency, ...){
     case_when(
-      transcript == Picture_Label & Congruency == "Incongruent" ~ FALSE,
+      transcript == Label & Congruency == "Incongruent" ~ FALSE,
       transcript %in% pluck(strsplit(Synonyms, ','), 1) ~ TRUE,
       TRUE ~ NA)})) %>%
-  arrange(Participant, Trial) %>%
-  group_by(Participant, Block) %>%
+  arrange(Sub_Code, Trial) %>%
+  group_by(Sub_Code, Block) %>%
   mutate(
     Prev_Congruency = lag(Congruency),
     Prev_Accuracy = lag(Accuracy)) %>%
@@ -107,7 +109,7 @@ pull_in_from_google2 <- read_csv("pull_in_from_google.csv") %>%
 
 Neutral_Timings <- pull_in_from_google2 %>%
   # filter(Task == "Neutral") %>%     # need to uncomment this later, because neutral trials should only be extracted from Task == "Neutral"
-  group_by(Picture_Identity) %>%
+  group_by(Dominant_Response) %>%
   summarise(RT = mean(preciseStartTime, na.rm = TRUE))
 
 pull_in_from_google3 <- pull_in_from_google2 %>%
@@ -115,8 +117,8 @@ pull_in_from_google3 <- pull_in_from_google2 %>%
          !is.na(preciseStartTime)) %>%
   mutate(
     RT_comparison = map_dbl(
-      Picture_Identity,
-      ~filter(Neutral_Timings, Picture_Identity == .) %>% pull(RT)),
+      Dominant_Response,
+      ~filter(Neutral_Timings, Dominant_Response == .) %>% pull(RT)),
     RT_diff = preciseStartTime - RT_comparison,
     Bias = coalesce(Block_Bias, Task_Side_Bias))
 

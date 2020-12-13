@@ -405,9 +405,9 @@ def runTrial():
 ##---------------------------SAVE TRIAL DATA----------------------------------##
 
     for i in (('Trial', trial_num + 1),                                         # Means that the first experimental trials ends up with a value of `1`
-                   ('Picture_Number', trial_vals[5]),
-                   ('Picture_Identity', trial_vals[2]),
-                   ('Picture_Label', trial_vals[1]),
+                   ('Pic_Num', trial_vals[5]),
+                   ('Dominant_Response', trial_vals[2]),
+                   ('Label', trial_vals[1]),
                    ('Task_Side', trial_vals[3]),
                    ('Response_Time_in_PsychoPy', vpvkOn.event_onset),
                    ('Response_Finish_in_PsychoPy', vpvkOff.event_offset),
