@@ -83,7 +83,6 @@ function end_trial() {
 function end_exp() {
     
         // typically you would submit the data through php which would automatically trigger the feedback html
-        // stopAudio();
         mediaRecorder.stop();
     
         // if (x === "on time") {

@@ -1,23 +1,4 @@
 <?php
-
-    //   //get data pushed
-    // //   $studyid=$_POST['put-studyid-here'];
-    // //   $sscode=$_POST['put-sscode-here'];
-    //   $data=$_POST['put-data-here'];
-    
-    // // // write data to file
-    //     file_put_contents('../../../../../jacks-exp-audio-recordings/bipoo.pcm', $data, FILE_APPEND);
-        
-    //     // exit
-    
-    // // // write ss code to list
-    // //     file_put_contents('data/data-submit-list.txt', $sscode . PHP_EOL, FILE_APPEND);
-    
-    // // //direct to questionnaires
-    // //     header('Location: feedback-letter.html');
-    // //     exit;
-
-
     $uploads_dir = '../../../../../jacks-exp-audio-recordings/';
     // modeled off https://stackoverflow.com/a/51305930/8239878
     print_r($_FILES);
