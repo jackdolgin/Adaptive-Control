@@ -1,7 +1,7 @@
 # install.packages("devtools")
 if (!require(devtools)) install.packages("pacman")
 pacman::p_load(googleLanguageR, googleCloudStorageR, tuneR, fs, data.table,
-               DescTools, tidyverse, future, here, magrittr)
+               DescTools, tidyverse, future, here, magrittr, text2speech)
 pacman::p_load_gh("LiKao/VoiceExperiment")
 devtools::source_gist("746685f5613e01ba820a31e57f87ec87")
 
@@ -13,7 +13,7 @@ here("Authentication_File.json") %T>%
   gl_auth %>%
   gcs_auth
 
-mypath <- here("online-task", "analyses", "Data")
+audio_dir <- here("online-task", "analyses", "Data", "audio")
 
 
 predictive_context <- function(mydf, either_block_or_side, relevant_task){
@@ -27,19 +27,31 @@ predictive_context <- function(mydf, either_block_or_side, relevant_task){
     )
 }
 
-prep_data <- "online-task/analyses/Data/Task_Data.csv" %>%
-  fread %>%
+prep_data <- 
+  list(
+    here("online-task", "analyses", "Data", "Task_Data.csv"),
+    here("images", "IPNP", "IPNP_spreadsheet_synonyms.csv"),
+    here("online-task", "analyses", "Data", "adaptive_control_demographics.csv")) %>%
+  map(fread) %>%
+  reduce(left_join) %>%
   filter(Block > 0) %>%
-  left_join(fread(here("images", "IPNP", "IPNP_spreadsheet_synonyms.csv"))) %>%
   group_by(Sub_Code) %>%
   mutate(
+    across(Nationality, ~if_else(is.na(.) | . == "O", "en-US", .)),
+    Full_Audio_Path = dir_ls(path(audio_dir, "full_recordings"),
+                             regexp = Sub_Code) %>% as.character,
+    Audio_Onset = 
+      str_extract(Full_Audio_Path,
+                  paste0("(?<=", Sub_Code, "_)\\d*\\.\\d*")) %>%
+      as.numeric,
     across(c(Fix_Onset, Fix_Offset, Stim_Onset, Stim_Offset, Trial_Start),
-           . %>% subtract(min(Trial_Start)) %>% divide_by(1000)),
+           . %>% subtract(Audio_Onset) %>% divide_by(1000)),
     End_recording = 
       ifelse(
         lead(Fix_Offset) > Stim_Onset + 58 | row_number() == n(),
         Stim_Onset + 58,
-        lead(Fix_Offset, default = last(Fix_Offset) + 58))) %>%
+        lead(Fix_Offset, default = last(Fix_Offset) + 58))
+  ) %>%
   predictive_context(quo(Block), "Predictive_Blocks") %>%
   predictive_context(quo(Task_Side), "Predictive_Locations") %>%
   ungroup() %>%
@@ -50,25 +62,25 @@ prep_data <- "online-task/analyses/Data/Task_Data.csv" %>%
 
 pull_in_from_google <- prep_data %>%
   pmap_df(function(Stim_Onset, Trial, End_recording,
-                   Sub_Code, Synonyms, ...){
+                   Sub_Code, Synonyms, Nationality,
+                   Full_Audio_Path, ...){
     
-    audio_path <- path(mypath, Sub_Code, "audio",
-                       paste0("Trial_", Trial, ".wav"))
+    spliced_audio_dir <- path(audio_dir, Sub_Code, "audio",
+                              paste0("Trial_", Trial, ".wav"))
     
-    readWave(dir_ls(path(mypath, Sub_Code, "audio", "full_recording"),
-                    glob = "*.wav"),
-             from = Stim_Onset, to = End_recording, units = "seconds") %>%
-      writeWave(audio_path, extensible = FALSE)
+    pcm_to_wav(Full_Audio_Path) %>%
+    readWave(from = Stim_Onset, to = End_recording, units = "seconds") %>%
+      writeWave(spliced_audio_dir, extensible = FALSE)
     
-    transcribed_list <- gl_speech(audio_path, sampleRateHertz = 44100L,
-                                  # languageCode = _________        need to fill this in still
+    transcribed_list <- gl_speech(sampleRateHertz = 44100L,
+                                  languageCode = Nationality,
                                   speechContexts =
                                     list(phrases = strsplit(Synonyms, ',') %>%
                                            unlist %>%
                                            trimws))
     
     if (length(transcribed_list$timings) > 0){
-      precise_timing <- audio_path %>% read.wav %>% onsets
+      precise_timing <- spliced_audio_dir %>% read.wav %>% onsets
       
       transcribed_list$transcript %>%
         mutate_at(vars(transcript), trimws) %>%
@@ -146,3 +158,12 @@ pull_in_from_google3 %>%
   guides(color = guide_legend("Trial", order = 1),
          fill = guide_legend("Block/Location", order = 2)) +
   facet_wrap(Task ~ Congruency, nrow = 1)
+
+
+
+
+
+
+tmp_pcm = tempfile(fileext = ".pcm")
+writeBin(res, tmp_pcm)
+tuneR::readWave(tmp_pcm)

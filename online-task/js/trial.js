@@ -82,9 +82,9 @@ function end_trial() {
 
 function end_exp() {
     
-        stopAndSubmitAudio();
         // typically you would submit the data through php which would automatically trigger the feedback html
-        submitData(trialArray, mainSQLTable, 'demographics');
+        // stopAudio();
+        mediaRecorder.stop();
     
         // if (x === "on time") {
         //     // but since the php won't post properly without a server I'll just trigger the html

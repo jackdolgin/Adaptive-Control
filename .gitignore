@@ -3,6 +3,6 @@ images/IPNP/original
 images/IPNP/trimmed
 Authentication_File.json
 online-task/php/database_config.php
+*.DS_Store
 *.wav
 .Rproj.user
-*.DS_Store
