@@ -2,7 +2,7 @@
 
 let mediaRecorder, audioStartTime;
 
-function startAudio() {
+function startAudio(expectingCompletion) {
   
   navigator.mediaDevices.getUserMedia({ audio: true })
     .then(stream => {
@@ -16,16 +16,16 @@ function startAudio() {
         });
     
         mediaRecorder.addEventListener("stop", () => {
-          
+            
           const audioBlob = new Blob(audioChunks);
           
-          let buf = resample(audioBlob);
+          const buf = resample(audioBlob, expectingCompletion);
           
         });
     });
 }
 
-function resample(audioChunks) {
+function resample(audioChunks, completed) {
   let audioCtx = new (AudioContext || webkitAudioContext)();
   
   
@@ -37,7 +37,7 @@ function resample(audioChunks) {
 
         // Process Audio
         const offlineAudioCtx = new OfflineAudioContext({
-          numberOfChannels: 2,
+          numberOfChannels: 1, // only one because Google's gl_speech function requires mono channels
           length: 44100 * buffer.duration,
           sampleRate: 44100,
         });
@@ -74,7 +74,7 @@ function resample(audioChunks) {
 
             offlineAudioCtx.startRendering().then(function(renderedBuffer) {
               
-              make_download(renderedBuffer, offlineAudioCtx.length);
+              make_download(renderedBuffer, offlineAudioCtx.length, completed);
 
 
             })
@@ -90,23 +90,24 @@ function resample(audioChunks) {
     reader1.readAsArrayBuffer(audioChunks); 
 }
 
-function make_download(abuffer, total_samples) {
+function make_download(abuffer, total_samples, completed) {
 
   // set sample length and rate
-  const duration = abuffer.duration,
+  let duration = abuffer.duration,
     rate = abuffer.sampleRate,
     offset = 0;
 
   const blob = bufferToWave(abuffer, total_samples);
 
-    submitAudio(blob);
+    submitAudio(blob, completed);
 
 }
 
 
 // Convert AudioBuffer to a Blob using WAVE representation
 function bufferToWave(abuffer, len) {
-  const numOfChan = abuffer.numberOfChannels,
+
+  let numOfChan = abuffer.numberOfChannels,
   length = len * numOfChan * 2 + 44,
   buffer = new ArrayBuffer(length),
   view = new DataView(buffer),
@@ -132,11 +133,11 @@ function bufferToWave(abuffer, len) {
   setUint32(length - pos - 4);                   // chunk length
 
   // write interleaved data
-  for(i = 0; i < abuffer.numberOfChannels; i++)
+  for(let i = 0; i < abuffer.numberOfChannels; i++)
     channels.push(abuffer.getChannelData(i));
 
   while(pos < length) {
-    for(i = 0; i < numOfChan; i++) {             // interleave channels
+    for(let i = 0; i < numOfChan; i++) {             // interleave channels
       sample = Math.max(-1, Math.min(1, channels[i][offset])); // clamp
       sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767)|0; // scale to 16-bit signed int
       view.setInt16(pos, sample, true);          // write 16-bit sample
@@ -160,37 +161,42 @@ function bufferToWave(abuffer, len) {
 }
 
 
-async function submitAudio(finalAudio){
-    
-    document.getElementById('targetDisplay').style.display = "none";
-    document.getElementById('progressBarGroup').style.display = "block";
-    
-    const progressValue = document.getElementById('progressBarValue')
-    const progress = document.querySelector('progress');
-    
-    function setValue(value) {
-      progressValue.style.width = `${value}%`;
-      progressValue.innerHTML = value + "%"
-      progress.value = value;
-    }
-    
+async function submitAudio(finalAudio, completed){
     
 	let xhr=new XMLHttpRequest();
-    let fd=new FormData();
-    let filename = 'mydata/' + Sub_Code + '_' + audioStartTime;
-    fd.append("audio_data",finalAudio, filename);
-    xhr.open("POST","php/upload.php",true);
-    xhr.upload.onprogress = function(e) {
-        
-        let percentComplete = Math.ceil((e.loaded / e.total) * 100);
-        setValue(percentComplete);
-    };
     
-     xhr.onload = function() {
-        if(this.status == 200) {
-            submitData(trialArray, mainSQLTable, 'demographics');
+    if (completed){
+        
+        xhr.upload.onprogress = function(e) {
+        
+            const percentComplete = Math.ceil((e.loaded / e.total) * 100);
+            setValue(percentComplete);
+        };
+        
+        document.getElementById('targetDisplay').style.display = "none";
+        document.getElementById('progressBarGroup').style.display = "block";
+        
+        const progressValue = document.getElementById('progressBarValue')
+        const progress = document.querySelector('progress');
+        
+        function setValue(value) {
+          progressValue.style.width = `${value}%`;
+          progressValue.innerHTML = value + "%"
+          progress.value = value;
+        }
+        
+        
+         xhr.onload = function() {
+            if(this.status == 200) {
+                submitData(trialArray, mainSQLTable, 'demographics');
         }
      }
+    }
+
+    const fd=new FormData();
+    const filename = 'mydata/' + Sub_Code + '_' + audioStartTime + '_' + trialBlock(1);
+    fd.append("audio_data",finalAudio, filename);
+    xhr.open("POST","php/upload.php",true);
 
     await xhr.send(fd);
 }

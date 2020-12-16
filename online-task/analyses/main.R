@@ -1,7 +1,7 @@
 # install.packages("devtools")
 if (!require(devtools)) install.packages("pacman")
 pacman::p_load(googleLanguageR, googleCloudStorageR, tuneR, fs, data.table,
-               DescTools, tidyverse, future, here, magrittr, text2speech)
+               DescTools, tidyverse, future, here, magrittr)
 pacman::p_load_gh("LiKao/VoiceExperiment")
 devtools::source_gist("746685f5613e01ba820a31e57f87ec87")
 
@@ -10,10 +10,11 @@ plan(multicore, workers = no_cores)
 
 
 here("Authentication_File.json") %T>%
-  gl_auth %>%
+  gl_auth %T>%
   gcs_auth
 
-audio_dir <- here("online-task", "analyses", "Data", "audio")
+data_dir <- here("online-task", "analyses", "Data")
+audio_dir <- here(data_dir, "audio")
 
 
 predictive_context <- function(mydf, either_block_or_side, relevant_task){
@@ -29,17 +30,18 @@ predictive_context <- function(mydf, either_block_or_side, relevant_task){
 
 prep_data <- 
   list(
-    here("online-task", "analyses", "Data", "Task_Data.csv"),
+    here("online-task", "analyses", "Data", "adaptive_control.csv"),
     here("images", "IPNP", "IPNP_spreadsheet_synonyms.csv"),
     here("online-task", "analyses", "Data", "adaptive_control_demographics.csv")) %>%
   map(fread) %>%
   reduce(left_join) %>%
   filter(Block > 0) %>%
-  group_by(Sub_Code) %>%
+  mutate(Full_Audio_Path = paste0(Sub_Code, "_.*_", Block),
+         across(Full_Audio_Path, ~dir_ls(path(audio_dir, "full"),
+                                         regexp = .))) %>%
+  group_by(Sub_Code, Block) %>%
   mutate(
     across(Nationality, ~if_else(is.na(.) | . == "O", "en-US", .)),
-    Full_Audio_Path = dir_ls(path(audio_dir, "full_recordings"),
-                             regexp = Sub_Code) %>% as.character,
     Audio_Onset = 
       str_extract(Full_Audio_Path,
                   paste0("(?<=", Sub_Code, "_)\\d*\\.\\d*")) %>%
@@ -65,14 +67,15 @@ pull_in_from_google <- prep_data %>%
                    Sub_Code, Synonyms, Nationality,
                    Full_Audio_Path, ...){
     
-    spliced_audio_dir <- path(audio_dir, Sub_Code, "audio",
-                              paste0("Trial_", Trial, ".wav"))
+    spliced_audio_dir <- path(audio_dir, "spliced", Sub_Code) %T>%
+      dir_create %>%
+      path(paste0("Trial_", Trial, ".wav"))
     
-    pcm_to_wav(Full_Audio_Path) %>%
-    readWave(from = Stim_Onset, to = End_recording, units = "seconds") %>%
+    readWave(Full_Audio_Path,
+             from = Stim_Onset, to = End_recording, units = "seconds") %>%
       writeWave(spliced_audio_dir, extensible = FALSE)
     
-    transcribed_list <- gl_speech(sampleRateHertz = 44100L,
+    transcribed_list <- gl_speech(spliced_audio_dir, sampleRateHertz = 44100L,
                                   languageCode = Nationality,
                                   speechContexts =
                                     list(phrases = strsplit(Synonyms, ',') %>%
@@ -92,10 +95,11 @@ pull_in_from_google <- prep_data %>%
     }
   }) %>%
   right_join(prep_data) %T>%
-  write_csv("pull_in_from_google.csv") #%>% 
+  write_csv(here(data_dir, "pull_in_from_google.csv")) #%>% 
 
 
-pull_in_from_google2 <- read_csv("pull_in_from_google.csv") %>%
+pull_in_from_google2 <- here(data_dir, "pull_in_from_google.csv") %>%
+  read_csv %>%
   group_by_at(vars(-preciseStartTime, -preciseEndTime, -transcript,             # so that each trial only takes up 1 row,...
                    -confidence)) %>%                                            # though each trial might only be one row...
   summarise(across(transcript, ~paste0(., collapse = "")),                      # anyways; depends on whether Google spits...
@@ -159,11 +163,3 @@ pull_in_from_google3 %>%
          fill = guide_legend("Block/Location", order = 2)) +
   facet_wrap(Task ~ Congruency, nrow = 1)
 
-
-
-
-
-
-tmp_pcm = tempfile(fileext = ".pcm")
-writeBin(res, tmp_pcm)
-tuneR::readWave(tmp_pcm)

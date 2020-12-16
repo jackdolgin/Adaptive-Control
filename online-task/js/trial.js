@@ -2,8 +2,8 @@ let trialCounter = 0; // tracks current trial
 const logTime = x => trialArray[trialCounter][x] = window.performance.now();
 const trialBlock = a => trialArray[trialCounter - a].Block;
 
-function pre_fixate(t=trialDuration["pre_fixate"]) {
-    if (trialCounter===0) startAudio();
+function pre_fixate(t=trialDuration["pre_fixate"], rec=false, expectingCompletion = false) {
+    if (rec) startAudio(expectingCompletion);
     
     if (trialCounter < pracTrials) {
         $("#countDisplay").html((trialCounter + 1) + " / " + pracTrials + " practice trials");
@@ -68,13 +68,16 @@ function end_trial() {
     trialCounter++;
 
     // if there are no more trials end experiment
-    if (trialCounter === trialArray.length) {
+    if(trialCounter === trialArray.length) {
         end_exp();
     } else if (trialCounter === pracTrials) {
         instrOnOff("On", "instructionDisplay");
-        displayInstructions(9, 10, pre_fixate, [2000,]);
+        displayInstructions(9, 10, pre_fixate, [2000, true]);
     } else if (trialBlock(0) > trialBlock(1)) {
-        displayInstructions(11, 12, failLoop, ["break", displayInstructions, [13, 13, pre_fixate, [2000,]]]);
+        mediaRecorder.stop();
+        let expectingCompletion = (trialBlock(0) === blockSequence.length);
+        displayInstructions(11, 12, failLoop, ["break", displayInstructions,
+            [13, 13, pre_fixate, [2000, true, expectingCompletion]]]);
     } else {
         checkFullScreen();
     }
