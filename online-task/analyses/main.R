@@ -5,9 +5,9 @@ pacman::p_load(googleLanguageR, googleCloudStorageR, tuneR, fs, data.table,
 pacman::p_load_gh("LiKao/VoiceExperiment")
 devtools::source_gist("746685f5613e01ba820a31e57f87ec87")
 
-no_cores <- availableCores() - 1
-plan(multicore, workers = no_cores)
-
+# no_cores <- availableCores() - 1
+# plan(multicore, workers = no_cores)
+# 
 
 here("Authentication_File.json") %T>%
   gl_auth %T>%
@@ -36,9 +36,10 @@ prep_data <-
   map(fread) %>%
   reduce(left_join) %>%
   filter(Block > 0) %>%
-  mutate(Full_Audio_Path = paste0(Sub_Code, "_.*_", Block),
-         across(Full_Audio_Path, ~dir_ls(path(audio_dir, "full"),
-                                         regexp = .))) %>%
+  mutate(Full_Audio_Path = map2_chr(Sub_Code, Block, function(x, y) {
+    path(audio_dir, "full") %>%
+      dir_ls(regexp = paste0(x, "_.*_", y))
+  })) %>%
   group_by(Sub_Code, Block) %>%
   mutate(
     across(Nationality, ~if_else(is.na(.) | . == "O", "en-US", .)),

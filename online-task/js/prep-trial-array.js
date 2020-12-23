@@ -1,4 +1,5 @@
 const task = _.sample(possibleTasks);
+
 // create a random subject code
 //set participant values		
 function getRandomString(length, chars) {
@@ -32,8 +33,8 @@ async function buildArray(csvInput) {
         (resolve, reject) => {
             ////////////////////////////////////////////////////// Condition Assigment /////////////////////////////////////////////////////
             const firstCongruencyInt = _.random(1)
-            , congruencyA = majorityLeft = conditionsPerTask[firstCongruencyInt]
-            , congruencyB = majorityRight = conditionsPerTask[1 - firstCongruencyInt];
+            , congruencyA = conditionsPerTask[firstCongruencyInt]
+            , congruencyB = conditionsPerTask[1 - firstCongruencyInt];
 
             
             ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,7 +94,7 @@ async function buildArray(csvInput) {
             ///////////////////////////////////////////////////////// Matrix Assembly //////////////////////////////////////////////////////////
             csvInput = _.chain(csvInput)
                 .filter(function(x){ return x.Keep; })
-                .sortBy('Mean_RT_All')                                          // // Sorts remaining rows in csv by these columns, which indicate how difficult the images are to identify
+                .sortBy('Mean_RT_All')                                          // Sorts remaining rows in csv by these columns, which indicate how difficult the images are to identify
                 .value()
 
             const actualPics = csvInput.length;                                                                                  // This is just a starting point, indicating how many pictures we even have access to in the database
@@ -141,6 +142,7 @@ async function buildArray(csvInput) {
                         df[i].Image_Path = folderlocationIPNP + "trimmed/" + df[i].Pic_Num + df[i].Dominant_Response + ".png";
                         ['Full_Screen', 'Audio_Connected', 'Audio_Permitted'].forEach(x => df[i][x] = true);
                         df[i].Sub_Code = Sub_Code;
+                        df[i].Worker_ID = sessionStorage["IDofwrkr"];
                         df[i].Task = task;
 
                         if (i < congTrials) {
@@ -219,7 +221,8 @@ async function buildArray(csvInput) {
                         nonMatchingPerBlock = congruentPerIncongBlock;
                     }
 
-                    matchingCount = nonMatchingCount = 0;
+                    matchingCount = 0;
+                    nonMatchingCount = 0;
                 }
 
                 rowCounter = -1;
@@ -231,7 +234,7 @@ async function buildArray(csvInput) {
 
                     rowCounter ++;
 
-                    if (! _.pluck(mainTrialsDf, 'Row_Num').includes(rowCounter)){
+                    if (! newRowOrder.includes(rowCounter)){
 
                         gruency = mainTrialsDf[rowCounter].Congruency;
                         if (gruency === blockDominance && matchingCount < matchingPerBlock){
@@ -244,8 +247,9 @@ async function buildArray(csvInput) {
                     }
                 }
                 mainTrialsDf[aRow].Old_Num = aRow;
-                mainTrialsDf[aRow].Row_Num = rowCounter;
-                mainTrialsDf[aRow].Block = Math.ceil((rowCounter  + 1) / trialsPerBlock);           // Assigns block numbers to each trial, which will eventually get saved into the exported experiment csv
+                newRowOrder[aRow] = rowCounter;
+                mainTrialsDf[rowCounter].Row_Num = aRow;
+                mainTrialsDf[rowCounter].Block = Math.ceil((aRow  + 1) / trialsPerBlock);           // Assigns block numbers to each trial, which will eventually get saved into the exported experiment csv
             }
 
             mainTrialsDf = _.chain(mainTrialsDf).shuffle().sortBy('Block').value();                       // If we don't shuffle, then for task `Predictive_Blocks` the end of each block is going to filled with trials that match the congruency that is dominant in the block (like for a ...

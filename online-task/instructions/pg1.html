@@ -6,7 +6,7 @@
             Welcome to the experiment!
         </h2>
         <p id='introduction'>
-            <span id='taskname'></span>Before you begin, please click "Allow" for the prompt that asks you for permission to use your microphone. You’ll be giving your responses during this task with your voice, so we need access to your microphone to record what you say. After selecting "Allow", click the button below to verify that it worked.
+            Before you begin, please click "Allow" for the prompt that asks you for permission to use your microphone. You’ll be giving your responses during this task with your voice, so we need access to your microphone to record what you say. After selecting "Allow", click the button below to verify that it worked.
         </p>
         <button id="askPermission" class="button-beige">Verify Audio Permissions</button>
         <br>
@@ -14,8 +14,6 @@
         
         <script>
             (() => {
-                
-                document.querySelector("#taskname").innerHTML = "Task = " + task + "<br/><br/>"
                 
                 $("#pageUp").hide();
                 document.querySelector("#askPermission").addEventListener("click", async function() {

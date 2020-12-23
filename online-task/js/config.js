@@ -8,13 +8,13 @@ const conditionsPerTask = ["Congruent", "Incongruent"]
 
 , spreadsheetLocationIPNP = folderlocationIPNP + "IPNP_spreadsheet.csv"                                                      // Path  to IPNP spreadhseet file
 
-, pracTrials = 2                                                                                                                      // Presumably practice trial total will never encroach on the total number of pics we have access to, so doesn't need to be updated in the rest of the file unlike `mainTrials`
+, pracTrials = 12                                                                                                                      // Presumably practice trial total will never encroach on the total number of pics we have access to, so doesn't need to be updated in the rest of the file unlike `mainTrials`
 
 , skipLetters = ["a", "e", "i", "l", "o", "u", "y"]                                                                                // Removes these characters from possibly being in the gibberish word during the `Neutral` task
 
 , possibleTasks = ["Neutral", "Predictive_Blocks", "Predictive_Locations"]
 
-, blockSequence = ["A", "B"]                                                                                      //  Sets up not only the order of the blocks (like A-B-A-B), but also allows for a disproportionate number of congruent or incongruent trials overall if we opted for an odd number of blocks (e.g. A-A-B-A-B), and also implicitly dictates how many blocks will be in the task
+, blockSequence = ["A", "B", "A", "B"]                                                                                      //  Sets up not only the order of the blocks (like A-B-A-B), but also allows for a disproportionate number of congruent or incongruent trials overall if we opted for an odd number of blocks (e.g. A-A-B-A-B), and also implicitly dictates how many blocks will be in the task
 
 , predictiveBlockCongruentBlockDominance = .75                                                               // Because in our study these two variables are equal, we could have combined these variables into one; however...
 , predictiveBlockIncongruentBlockDominance = .75                                                             // ...this set-up accomodates specifying different ratios for congruent- vs incongruent-dominant blocks
@@ -33,11 +33,11 @@ const conditionsPerTask = ["Congruent", "Incongruent"]
 , trialDuration = {"pre_fixate": 500,
                    "fixate": 1000,
                    "post_fixate": 500,
-                   "stimulus": 2500}
+                   "stimulus": 2750}
 
 , speechRecognitionDuration = 10
 
-, experimenterEmail = "XXXX@gmail.com"
+, experimenterEmail = "jdwk04@gmail.com"
 
 , hosturl = "https://cdmlab.a2hosted.com?"
 
@@ -47,7 +47,7 @@ const conditionsPerTask = ["Congruent", "Incongruent"]
 
 , feedbackSQLTable = 'adaptive_control_feedback';
 
-let mainTrials = 14                                                                                                                // Like `actualPics` in `pull-in-csv.js`, this is just a starting point
+let mainTrials = 252                                                                                                                // Like `actualPics` in `prep-trial-array.js`, this is just a starting point
 
 , numScreenSizeWarnings = 3
 

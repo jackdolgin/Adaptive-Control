@@ -9,7 +9,7 @@ body {
     background-color:#ffffff;
 }
 
-button, #info-consent-letter, #form-thanks, #plz-answer {
+button, #info-consent-letter, #workerID, #form-thanks, #plz-answer {
     display: none;
     visibility: hidden; 
 }
