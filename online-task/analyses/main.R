@@ -1,21 +1,25 @@
 # install.packages("devtools")
 if (!require(devtools)) install.packages("pacman")
 pacman::p_load(googleLanguageR, googleCloudStorageR, tuneR, fs, data.table,
-               DescTools, tidyverse, future, here, magrittr)
+               DescTools, tidyverse, here, magrittr)
 pacman::p_load_gh("LiKao/VoiceExperiment")
 devtools::source_gist("746685f5613e01ba820a31e57f87ec87")
 
-# no_cores <- availableCores() - 1
-# plan(multicore, workers = no_cores)
-# 
-
+# May take a few minutes to run the first time you're authenticating
 here("Authentication_File.json") %T>%
   gl_auth %T>%
   gcs_auth
 
+
 data_dir <- here("online-task", "analyses", "Data")
 audio_dir <- here(data_dir, "audio")
 
+pcpts_with_all_audio_saved <- dir_ls(path(audio_dir, "full")) %>%
+  str_extract("(?<=full/)[[:alnum:]]*") %>%
+  as_tibble_col(column_name = "Sub_Code") %>%
+  count(Sub_Code) %>%
+  filter(n == 4) %>%
+  select(Sub_Code)
 
 predictive_context <- function(mydf, either_block_or_side, relevant_task){
   mydf %>%
@@ -35,10 +39,11 @@ prep_data <-
     here("online-task", "analyses", "Data", "adaptive_control_demographics.csv")) %>%
   map(fread) %>%
   reduce(left_join) %>%
+  right_join(pcpts_with_all_audio_saved) %>%
   filter(Block > 0) %>%
   mutate(Full_Audio_Path = map2_chr(Sub_Code, Block, function(x, y) {
-    path(audio_dir, "full") %>%
-      dir_ls(regexp = paste0(x, "_.*_", y))
+      path(audio_dir, "full") %>%
+        dir_ls(regexp = paste0(x, "_.*_", y), fail = FALSE)
   })) %>%
   group_by(Sub_Code, Block) %>%
   mutate(
@@ -59,9 +64,20 @@ prep_data <-
   predictive_context(quo(Task_Side), "Predictive_Locations") %>%
   ungroup() %>%
   mutate(across(c(Synonyms),
-         ~ifelse(Dominant_Response == Label,
-                      Label,
-                      paste(Dominant_Response, Label, sep = ", "))))
+                ~if_else(Dominant_Response == Label,
+                         paste(Label, ., sep = ", "),
+                         paste(Dominant_Response, Label, ., sep = ", "))))
+
+transcriber <- function(x, y, z, b) {
+  gl_speech(x,
+            languageCode = y,
+            speechContexts =
+              list(phrases = strsplit(z, ',') %>%
+                     unlist %>%
+                     trimws),
+            customConfig = list(model = b)
+  )
+}
 
 pull_in_from_google <- prep_data %>%
   pmap_df(function(Stim_Onset, Trial, End_recording,
@@ -71,20 +87,21 @@ pull_in_from_google <- prep_data %>%
     spliced_audio_dir <- path(audio_dir, "spliced", Sub_Code) %T>%
       dir_create %>%
       path(paste0("Trial_", Trial, ".wav"))
-    
+
     readWave(Full_Audio_Path,
-             from = Stim_Onset, to = End_recording, units = "seconds") %>%
+             from = Stim_Onset, to = End_recording, units = "seconds") %T>%
       writeWave(spliced_audio_dir, extensible = FALSE)
-    
-    transcribed_list <- gl_speech(spliced_audio_dir, sampleRateHertz = 44100L,
-                                  languageCode = Nationality,
-                                  speechContexts =
-                                    list(phrases = strsplit(Synonyms, ',') %>%
-                                           unlist %>%
-                                           trimws))
+    # transcribed_list <- transcriber(spliced_audio_dir, Nationality, Synonyms, "command_and_search")
+    transcribed_list <- tryCatch({
+      transcriber(spliced_audio_dir, Nationality, Synonyms, "command_and_search")
+    }, error = function(e) {
+      transcriber(spliced_audio_dir, Nationality, Synonyms, "default")
+    })
     
     if (length(transcribed_list$timings) > 0){
-      precise_timing <- spliced_audio_dir %>% read.wav %>% onsets
+      precise_timing <- spliced_audio_dir %>%
+        read.wav(filter = list(high = 4000)) %>%
+        onsets
       
       transcribed_list$transcript %>%
         mutate_at(vars(transcript), trimws) %>%
@@ -94,15 +111,16 @@ pull_in_from_google <- prep_data %>%
           preciseStartTime = pluck(precise_timing, first, "start"),
           preciseEndTime = pluck(precise_timing, last, "end"))
     }
+    Sys.sleep(1)
   }) %>%
-  right_join(prep_data) %T>%
-  write_csv(here(data_dir, "pull_in_from_google.csv")) #%>% 
+  # right_join(prep_data) %T>% # double check that i want to use right join, especially if there's missing spoken words
+  write_csv(here(data_dir, "pull_in_from_google.csv")) #%>%
 
 
 pull_in_from_google2 <- here(data_dir, "pull_in_from_google.csv") %>%
   read_csv %>%
   group_by_at(vars(-preciseStartTime, -preciseEndTime, -transcript,             # so that each trial only takes up 1 row,...
-                   -confidence)) %>%                                            # though each trial might only be one row...
+                   -confidence)) %>%                                            # though each trial might only be one row (also some nations' lack a confidence rating)...
   summarise(across(transcript, ~paste0(., collapse = "")),                      # anyways; depends on whether Google spits...
             across(preciseStartTime, min),                                      # out multiple rows for $transcript
             across(preciseEndTime, max)) %>%                                    
@@ -163,4 +181,3 @@ pull_in_from_google3 %>%
   guides(color = guide_legend("Trial", order = 1),
          fill = guide_legend("Block/Location", order = 2)) +
   facet_wrap(Task ~ Congruency, nrow = 1)
-

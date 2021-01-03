@@ -37,9 +37,9 @@ function resample(audioChunks, completed) {
 
         // Process Audio
         const offlineAudioCtx = new OfflineAudioContext({
-          numberOfChannels: 1, // only one because Google's gl_speech function requires mono channels
-          length: 44100 * buffer.duration,
-          sampleRate: 44100,
+          numberOfChannels: 1, // only one because Google's R gl_speech function requires mono channels
+          length: 16000 * buffer.duration, // 16000 is an important choice for a couple reasons; higher frequency recordings take up more memory and are large enough that they may cause the gl_speech function to time out; also, gl_speech winds up reducing recordings with greater than 16000 frequency down to 16000 anyways, so there's no benefit to choosing any greater of a number
+          sampleRate: 16000,
         });
 
         // Audio Buffer Source
