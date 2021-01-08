@@ -4,6 +4,8 @@ const conditionsPerTask = ["Congruent", "Incongruent"]
 
 , practiceWords = ['colleague', 'mischievous', 'zaniest'] // words for practice block
 
+, breakWords = ['break', 'save'] // words for breaks between blocks
+
 , folderlocationIPNP = "../images/IPNP/"                                                      // Path  to IPNP folder
 
 , spreadsheetLocationIPNP = folderlocationIPNP + "IPNP_spreadsheet.csv"                                                      // Path  to IPNP spreadhseet file

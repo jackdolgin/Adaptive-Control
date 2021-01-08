@@ -1,8 +1,8 @@
-async function checkSpoken() {
+async function checkSpoken(correctWords) {
     eventTimer.setTimeout(() => {
         document.querySelector("#stimText").style.visibility = "visible";
     }, 500);
-    matching = await hearWords();
+    matching = await hearWords(correctWords);
     spokenCorrect = await _.isEqual(matching[0], matching[1]);
     return spokenCorrect;
 }
@@ -11,11 +11,13 @@ async function failLoop(stage, nextFunc, nextParams) {
     let failCount = 0
     , matching, practicePass, tries, triesWarning;
     
+    const correctWords = (stage === "practice") ? practiceWords : breakWords;
+    
     targetSide(0);
     
     eventTimer.setTimeout(() => {
         document.querySelector("#stimText").innerHTML =
-            practiceWords.reduce((x, y) => x + '<br>' + y);
+            correctWords.reduce((x, y) => x + '<br>' + y);
     }, 500);
     
     await (async () => {
@@ -36,10 +38,10 @@ async function failLoop(stage, nextFunc, nextParams) {
                         instrOnOff("On", "warning");
                         document.querySelector("#removeWarning").addEventListener("click", function() {
                             instrOnOff("Off", "warning");
-                            resolve(checkSpoken());
+                            resolve(checkSpoken(correctWords));
                         });
                     } else {
-                        resolve(checkSpoken());
+                        resolve(checkSpoken(correctWords));
                     }
                 }
             )
@@ -55,14 +57,14 @@ async function failLoop(stage, nextFunc, nextParams) {
     (failCount <= failMax) ? nextFunc.apply(this, nextParams) : audioCheckFailed();
 }
 
-async function hearWords() {
-    let recPracticeWords = [];
+async function hearWords(correctWords) {
+    let recWords = [];
     let test;
     if (annyang) {
         test = function(check) {
             splitWords = check.split(" ");
             for (const word in splitWords) {
-                recPracticeWords.push(splitWords[word].toLowerCase());
+                recWords.push(splitWords[word].toLowerCase());
             }
         }
     }
@@ -79,7 +81,7 @@ async function hearWords() {
             eventTimer.setTimeout(() => {
                 annyang.abort();
                 document.querySelector("#stimText").style.visibility = "hidden";
-                resolve([recPracticeWords, practiceWords]);
+                resolve([recWords, correctWords]);
             }, speechRecognitionDuration * 1000);
         }
     )
