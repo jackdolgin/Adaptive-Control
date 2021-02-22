@@ -434,7 +434,7 @@ cleaned_df %>% count(Sub_Code, Task) %>% group_by(Task) %>%
 
 # for looking at which trials didn't have a response that registered either correctly or incorrectly; requires re-running cleaned_df without the filter at the bottom
 cleaned_df %>%
-  select(Congruency, Dominant_Resp, Dominant_Response, Fix_Offset, Fix_Onset, Full_Screen, Keep, Label, Stim_Offset, Stim_Onset, Task, Trial_Start, Worker_ID, End_recording, Pic_Num, transcript, Synonyms, confidence, Sub_Code, Trial, preciseStartTime, preciseEndTime, Accuracy) %>%
+  select(Congruency, Dominant_Resp, Dominant_Response, Fix_Offset, Fix_Onset, Full_Screen, Keep, Label, Stim_Offset, Stim_Onset, Task, Trial_Start, End_recording, Pic_Num, transcript, Synonyms, confidence, Sub_Code, Trial, preciseStartTime, preciseEndTime, Accuracy) %>%
   filter(is.na(Accuracy)) %>%
   group_by(Sub_Code) %>%
   mutate(counter = n()) %>%
