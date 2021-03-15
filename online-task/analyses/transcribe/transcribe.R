@@ -6,7 +6,7 @@ pacman::p_load(googleLanguageR, googleCloudStorageR, sound, tuneR, fs,
                DescTools, tidyverse, furrr, here, magrittr)
 pacman::p_load_gh("LiKao/VoiceExperiment")
 
-no_cores <- availableCores() - 1
+no_cores <- availableCores() - 1L
 plan(multisession, workers = no_cores)
 
 # May take a few minutes to run the first time you're authenticating
@@ -14,14 +14,15 @@ here("Authentication_File.json") %T>%
   gl_auth %T>%
   gcs_auth
 
-audio_dir <- here("online-task", "analyses", "raw_data", "audio")
+raw_dir <- here("online-task", "analyses", "raw_data")
+audio_dir <- here(raw_dir, "audio")
 transcribe_dir <- here("online-task", "analyses", "transcribe")
 
 pcpts_with_all_audio_saved <- dir_ls(path(audio_dir, "full")) %>%
   str_extract("(?<=full/)[[:alnum:]]*") %>%
   as_tibble_col(column_name = "Sub_Code") %>%
   count(Sub_Code) %>%
-  filter(n == 4) %>%
+  filter(n == 4L) %>%
   select(Sub_Code) %>%
   filter(! Sub_Code %in% c(                                                     # Remove these participants from the analyzed data
     "TeIzC5Si",                                                                 # second time participating
@@ -68,14 +69,14 @@ predictive_context <- function(mydf, either_block_or_side, relevant_task){
 }
 
 list(
-  here("online-task", "analyses", "raw_data", "raw_from_mturk.csv"),
+  here(raw_dir, "raw_from_mturk.csv"),
   here("images", "IPNP", "IPNP_spreadsheet_synonyms.csv"),
-  here("online-task", "analyses", "raw_data", "demographics.csv")
+  here(raw_dir, "demographics.csv")
 ) %>%
   map(read_csv) %>%
   reduce(left_join) %>%
   right_join(pcpts_with_all_audio_saved) %>%
-  filter(Block > 0) %>%
+  filter(Block > 0L) %>%
   mutate(Full_Audio_Path = map2_chr(Sub_Code, Block, function(x, y) {
     path(audio_dir, "full") %>%
       dir_ls(regexp = paste0(x, "_.*_", y), fail = FALSE)
@@ -86,24 +87,24 @@ list(
     across(Nationality, ~if_else(is.na(.) | . == "O", "en-US", .)),
     Time_Skipped = max(Stim_Offset) %>%
       subtract(min(Trial_Start)) %>%
-      divide_by(1000) %>%
+      divide_by(1000L) %>%
       subtract(Recording_Duration),
     across(c(Fix_Onset, Fix_Offset, Stim_Onset, Stim_Offset, Trial_Start),
            . %>%
              subtract(min(Trial_Start)) %>%
-             divide_by(1000) %>%
+             divide_by(1000L) %>%
              subtract(Time_Skipped)),
     End_recording = 
       if_else(
-        lead(Fix_Offset) > Stim_Onset + 58 | row_number() == n(),
-        Stim_Onset + 58,
-        lead(Fix_Offset, default = last(Fix_Offset) + 58)),
+        lead(Fix_Offset) > Stim_Onset + 58L | row_number() == n(),
+        Stim_Onset + 58L,
+        lead(Fix_Offset, default = last(Fix_Offset) + 58L)),
     across(c(Audio_Connected, Audio_Permitted, Full_Screen),
            list(lead, lag), .names = "{.col}_{.fn}")
   ) %>%
   filter(across(
     starts_with(c("Audio_Connected", "Audio_Permitted", "Full_Screen")),
-    ~is.na(.) | . == 1
+    ~is.na(.) | . == 1L
   )) %>%
   predictive_context(quo(Block), "Predictive_Blocks") %>%
   predictive_context(quo(Task_Side), "Predictive_Locations") %>%
@@ -113,23 +114,23 @@ list(
                          paste(Label, ., sep = ", "),
                          paste(Dominant_Response, Label, ., sep = ", "))),
          across(Synonyms, ~str_remove(., " NA$"))) %>%
-  write_csv(here(transcribe_dir, "light_clean_from_mturk.csv"))
+  write_csv(here(raw_dir, "light_clean_from_mturk.csv"))
 
-light_clean_from_mturk <- here(transcribe_dir, "light_clean_from_mturk.csv") %>%
+light_clean_from_mturk <- here(raw_dir, "light_clean_from_mturk.csv") %>%
   read_csv
 
 i_max <- light_clean_from_mturk %>%
   nrow %>%
-  RoundTo(100, ceiling) %>%
-  divide_by(100)
+  RoundTo(100L, ceiling) %>%
+  divide_by(100L)
 
-for (loop_count in 0:(i_max - 1)){
-  while_count <- 0
-  while (while_count < 5){
+for (loop_count in 0L:(i_max - 1L)){
+  while_count <- 0L
+  while (while_count < 5L){
     tryCatch({
       light_clean_from_mturk %>%
-        filter(row_number() > (loop_count * 100 ),
-               row_number() <= (loop_count * 100) + 100) %>%
+        filter(row_number() > (loop_count * 100L),
+               row_number() <= (loop_count * 100L) + 100L) %>%
         pmap_df(function(Stim_Onset, Trial, End_recording,
                          Sub_Code, Synonyms, Nationality,
                          Full_Audio_Path, ...){
@@ -152,10 +153,10 @@ for (loop_count in 0:(i_max - 1)){
           Sys.sleep(1)
           
           precise_timing <- spliced_audio_dir %>%
-            read.wav(filter = list(high = 4000)) %>%
+            read.wav(filter = list(high = 4000L)) %>%
             onsets
           
-          if(length(transcribed_list$timings) > 0){
+          if(length(transcribed_list$timings) > 0L){
             df <- transcribed_list %>%
               pluck('transcript') %>%
               select(transcript, confidence) %>%
@@ -172,11 +173,11 @@ for (loop_count in 0:(i_max - 1)){
         }) %>%
         write_csv(here(transcribe_dir,
                        "chunked",
-                       paste0("transcription_pt", loop_count + 1,  ".csv")))
+                       paste0("transcription_pt", loop_count + 1L,  ".csv")))
       
       break
     }, error=function(e) {         # test this line just for kick's sake
-      while_count <- while_count + 1
+      while_count <- while_count + 1L
     }
     )
   }
