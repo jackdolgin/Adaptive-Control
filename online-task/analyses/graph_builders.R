@@ -1,18 +1,23 @@
+pacman::p_load(gtools, tidyverse, cowplot, latex2exp)
+devtools::source_gist("746685f5613e01ba820a31e57f87ec87")
+
 diff_comparison_layer <- function(comparison) {
   
   if (comparison == "diff from 0") {
     third_group <- as.name("Bias")
     term_filter <- "Don't Filter Me"
     
+    star_hjust <- "left"
     bracket_inner_x <- 1.13
     bracket_width <- .04
-    star_dist <- -.17
+    star_dist <- -.07
     group_head <- 2L
     
   } else if (comparison == "diff from fellow congr") {
     third_group <- NULL
     term_filter <- "Intercept"
     
+    star_hjust <- "right"
     bracket_inner_x <- .86
     bracket_width <- -.07
     star_dist <- .09
@@ -21,70 +26,86 @@ diff_comparison_layer <- function(comparison) {
   
   bracket_outer_x <- bracket_inner_x + bracket_width
   
-  bracket_df <- finished_df %>%
+  bracket_df <- finished_df_slight_name_change %>%
     group_by(Task, Congruency, !!third_group) %>%
-    group_modify(~ regress_both_tasks(.x, .y, "RT_diff")) %>%
+    group_modify(~ regress_both_tasks(.x, .y, "RT_diff", "difference")) %>%
     ungroup() %>%
     filter(!str_detect(term, term_filter),
-           p.value < .05) %>%
-    mutate(across(p.value, stars.pval)) %>%
-    inner_join(finished_df) %>%
-    group_by(Task, Congruency, p.value, Bias) %>%
-    summarise(across(RT_diff, median),
-              x_val = c(bracket_inner_x,
-                        bracket_outer_x,
-                        bracket_outer_x,
-                        bracket_inner_x),
-              .groups = "drop_last") %>%
-    mutate(
-      across(RT_diff, ~if_else(
-        comparison == "diff from 0" & Bias == "Congruent", 0L, .)),
-      RT_median = median(RT_diff)) %>%
-    filter(! between(row_number(), 3L, 6L))
+           p.value < .05)
   
-  stars_df <- bracket_df %>%
-    filter(row_number() == 1L) %>%
-    mutate(across(x_val, ~ . - star_dist))
-  
-  dash_df <- mutate(bracket_df,
-                    across(x_val, ~if_else(
-                      between(row_number(), 2L, 3L),
-                      . + .1,
-                      . + .25)))
-  
-  
-  dash_df_1 <- filter(dash_df, row_number() < 3L)
-  dash_df_2 <- filter(dash_df, row_number() >= 3L)
-  
-  list(
-    geom_path(bracket_df,
-              mapping = aes(x_val, RT_diff),
-              inherit.aes = FALSE),
-    geom_text(stars_df,
-              mapping = aes(x_val, RT_median, label = p.value),
-              inherit.aes = FALSE,
-              hjust = "right"),
-    geom_line(dash_df_1,
-              mapping = aes(x_val, RT_diff),
-              inherit.aes = FALSE,
-              linetype = "dotted"),
-    geom_line(dash_df_2,
-              mapping = aes(x_val, RT_diff),
-              inherit.aes = FALSE,
-              linetype = "dotted")
-  ) %>%
-    head(group_head)
+  if (nrow(bracket_df) == 0) {
+    NULL
+  } else{
+    bracket_df <- bracket_df %>%
+      mutate(across(p.value, stars.pval)) %>%
+      inner_join(finished_df_slight_name_change) %>%
+      group_by(Task, Congruency, p.value, Bias) %>%
+      summarise(across(RT_diff, median),
+                x_val = c(bracket_inner_x,
+                          bracket_outer_x,
+                          bracket_outer_x,
+                          bracket_inner_x)) %>%
+      group_by(Task, Congruency) %>%
+      mutate(
+        across(RT_diff, ~if_else(
+          comparison == "diff from 0" & Bias == "Mostly Congruent", 0, .)),
+        RT_45thperc = quantile(RT_diff, .45, na.rm = TRUE)) %>%
+      filter(! between(row_number(), 3L, 6L))
+    
+    stars_df <- bracket_df %>%
+      slice_head %>%
+      mutate(across(x_val, ~ . - star_dist))
+    
+    dash_df <- mutate(bracket_df,
+                      across(x_val, ~if_else(
+                        between(row_number(), 2L, 3L),
+                        . + .1,
+                        . + .25)))
+    
+    
+    dash_df_1 <- slice_head(dash_df, n = 2L)
+    dash_df_2 <- slice(dash_df, -(1:2))
+    
+    list(
+      geom_path(bracket_df,
+                mapping = aes(x_val, RT_diff),
+                inherit.aes = FALSE),
+      geom_text(stars_df,
+                mapping = aes(x_val, RT_45thperc, label = p.value),
+                inherit.aes = FALSE,
+                hjust = star_hjust),
+      geom_line(dash_df_1,
+                mapping = aes(x_val, RT_diff),
+                inherit.aes = FALSE,
+                linetype = "dotted"),
+      geom_line(dash_df_2,
+                mapping = aes(x_val, RT_diff),
+                inherit.aes = FALSE,
+                linetype = "dotted")
+    ) %>%
+      head(group_head)
+  }
 }
 
 
 split_violin_builder <- function(medium) {
+  
+  finished_df_slight_name_change <<- mutate(
+    finished_df,
+    across(Bias, ~ paste("Mostly", Bias))
+  )
+  
   if(medium == "manuscript") {
     y_header = .98
     y_footer = .1
-    extra_labels = list()
+    cap_pos <- 1.6
+    extra_labels = labs(caption = TeX(
+      "*p<0.05; **p<0.01; ***p<0.001"
+    ))
   } else {
     y_header = .89
     y_footer = .13
+    cap_pos <- 1L
     extra_labels = list(
       labs(
         title = 
@@ -103,7 +124,7 @@ split_violin_builder <- function(medium) {
     )
   }
   
-  ggdraw(finished_df %>%
+  ggdraw(finished_df_slight_name_change %>%
            ggplot(aes(x = NA,
                       y = RT_diff,
                       fill = Bias)) +
@@ -138,7 +159,7 @@ split_violin_builder <- function(medium) {
                                        vjust = 1,
                                        size = 18,
                                        margin = margin(0L, 0L, 15L, 0L)),
-             plot.caption = element_text(vjust = -30L),
+             plot.caption = element_text(vjust = -30L, hjust = cap_pos),
              plot.margin = unit(c(10L, 10L, 70L, 10L), "pt")) +
            guides(
              fill = guide_legend("Block/Location Bias"),
@@ -146,8 +167,8 @@ split_violin_builder <- function(medium) {
            ylab("Response Time (compared to control condition, in seconds)") +
            extra_labels
   ) +
-    draw_label("Predictive Blocks", 0.24, y_header) +
-    draw_label("Predictive Locations", .64, y_header) +
+    draw_label("LWPC Condition", 0.24, y_header) +
+    draw_label("CSPC Condition", .64, y_header) +
     draw_label("Congruent", .145, y_footer, size = 12L) +
     draw_label("Incongruent", .35, y_footer, size = 12L) +
     draw_label("Congruent", .55, y_footer, size = 12L) +

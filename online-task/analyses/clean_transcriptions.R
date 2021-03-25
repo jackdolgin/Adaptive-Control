@@ -5,7 +5,7 @@
 if (!require(devtools)) install.packages("pacman")
 pacman::p_load(DescTools, tidyverse, furrr, here)
 
-no_cores <- availableCores() - 1
+no_cores <- availableCores() - 1L
 plan(multisession, workers = no_cores)
 
 analyses_dir <- here("online-task", "analyses")
@@ -52,5 +52,6 @@ here(transcript_dir, "transcriptions_merged.csv") %>%
   arrange(Sub_Code, Trial) %>%
   select(-c(transcript.x, transcript.y)) %>%
   group_by(Sub_Code, transcript) %>%
-  mutate(First_Word_Use = (row_number() == 1)) %>%                              # If someone says the same word for multiple trials, only keep the first trial they said that word and filter out the other times
+  mutate(First_Word_Use = (row_number() == 1L)) %>%                             # If someone says the same word for multiple trials, only keep the first trial they said that word and filter out the other times
+  rename(RT = preciseStartTime) %>%
   write_csv(here(analyses_dir, "cleaned.csv"))

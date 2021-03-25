@@ -2,8 +2,8 @@
 
 # install.packages("devtools")
 if (!require(devtools)) install.packages("pacman")
-pacman::p_load(gtools, DescTools, tidyverse, furrr, here, magrittr, lme4,
-               lmerTest, broomExtra, cowplot, png)
+pacman::p_load(gtools, DescTools, tidyverse, furrr, here, magrittr, glue, lme4,
+               lmerTest, broomExtra, cowplot, stargazer, png, scales, english)
 
 analyses_dir <- here("online-task", "analyses")
 
@@ -13,7 +13,7 @@ plan(multisession, workers = no_cores)
 cleaned_df <- read_csv(here(analyses_dir, "cleaned.csv"))
 
 
-stats_graph_and_methods <- function(exact_resp_req, keep_first_block,
+output_list_per_analysis_combo <- function(exact_resp_req, keep_first_block,
                                     keep_last_three_blocks, cautious_regr){
   
   source(here(analyses_dir, "graph_builders.R"), local = TRUE)
@@ -49,8 +49,8 @@ stats_graph_and_methods <- function(exact_resp_req, keep_first_block,
     group_by(Sub_Code, Block) %>%
     mutate(across(c(Accuracy, Timely_Response, RT, First_Word_Use),
                   lag, .names = "prev_{.col}")) %>%
-    filter(row_number() > 1L,                                                   # remove the first trial of each block
-           Keep_Block) %>%
+    slice(-1L) %>%                                                              # remove the first trial of each block
+    filter(Keep_Block) %>%
     ungroup()
   
   cleaned_and_filtered_df <- filter(
@@ -65,21 +65,29 @@ stats_graph_and_methods <- function(exact_resp_req, keep_first_block,
     prev_Timely_Response
   )
   
+  cleaned_and_filtered_df %>%
+    filter(Task == "Predictive_Blocks") %>%
+    group_by(Congruency, Block_Bias) %>%
+    summarise(mean_RT = mean(RT)) %>%
+    pivot_wider(names_from = Congruency, values_from = mean_RT) %>%
+    mutate(
+      # across(where(is_numeric), ~ round(1000 * .)),
+      pwalk(., function(Block_Bias, Congruent, Incongruent){
+        Incongruent %>%
+          subtract(Congruent) %>%
+          multiply_by(1000L) %>%
+          round %>%
+          row_append(paste0(Block_Bias, "_congruency_effect"))
+        # 
+        # row_append(Incongruent - Congruent,
+        #            paste0(Block_Bias, "_congruency_effect"))
+      })
+    )
+  
   neutral_timings <- cleaned_and_filtered_df %>%
     filter(Task == "Neutral") %>%
     group_by(Dominant_Response) %>%
-    summarise(baseline_RT = mean(RT))
-  
-  dog_rt <- neutral_timings %>%
-    filter(Dominant_Response == "dog") %>%
-    pull(baseline_RT)
-
-  neutral_timings %>%
-    filter(Dominant_Response == "beaver") %>%
-    pull(baseline_RT) %>%
-    subtract(dog_rt) %>%
-    multiply_by(1000) %>%
-    round
+    summarise(baseline_RT = mean(RT), .groups = "drop")
   
   finished_df <- cleaned_and_filtered_df %>%
     filter(str_detect(Task, "Predictive")) %>%
@@ -151,10 +159,41 @@ stats_graph_and_methods <- function(exact_resp_req, keep_first_block,
     }
   }
   
-  "manuscript_not" %>%
+  finished_df %>%
+    mutate(across(Bias, ~ paste("Mostly", Bias))) %>%
+    group_by(Task, Congruency, Bias) %>%
+    group_modify(~ regress_both_tasks(.x, .y, "RT_diff", "difference"))  %>%
+    ungroup() %>%
+    filter(effect == "fixed") %>%
+    mutate(across(Task, ~if_else(. == "Predictive_Blocks", "LWPC", "CSPC")),
+           across(p.value, ~if_else(. < .001, "< .001", paste(round(., 3L)))),
+           across(c(estimate, std.error, statistic, df), ~paste(round(., 3L))),
+           across(c(p.value, estimate, std.error),
+                  ~str_remove(., "0(?=\\.)"))) %>%
+    select(-c(effect, group, term)) %>%
+    rename(
+      Condition = Task,
+      `$\\beta$` = estimate,
+      `\\emph{SE}` = std.error,
+      `\\emph{t}` = statistic,
+      `\\emph{DF}` = df,
+      `\\emph{p}` = p.value) %>%
+    xtable::xtable(
+      align = "llll|ccccc",
+      caption = stringr::str_wrap(
+        "Linear mixed-effects model estimates of a congruency effect among
+      each combination of condition, trial congruency, and typical block
+      (in LWPC condition) or location (in CSPC condition) congruency,
+      using difference-scored RTs"
+      )) %>%
+    list %>%
+    list %>%
+    row_append("table_1")
+  
+  "manuscript" %>%
     split_violin_builder %>%
     list %>%
-    row_append("plot")
+    row_append("fig_2")
 
   # ggsave(split_violin_builder(),
   #        file = here("online-task", "analyses", "test.svg"),
@@ -163,10 +202,7 @@ stats_graph_and_methods <- function(exact_resp_req, keep_first_block,
   
   finished_df %>%
     group_by(Task) %>%
-    group_walk(~ regress_both_tasks(.x, .y, "RT", "interaction"))# %>%
-    # list %>%
-    # row_append("stats_table")
-    # stargazer
+    group_walk(~ regress_both_tasks(.x, .y, "RT", "interaction"))
   
   finished_df %>%
     group_by(Task, Congruency) %>%
@@ -191,20 +227,29 @@ stats_graph_and_methods <- function(exact_resp_req, keep_first_block,
   
   # Response Accuracies
   
-  semi_trimmed_df %>%
+  n_incorrect_trials <- semi_trimmed_df %>%
     filter(Accuracy == FALSE) %>%
-    nrow %>%
+    nrow
+  
+  n_incorrect_trials %>%
     divide_by(nrow(semi_trimmed_df)) %>%
+    percent(.1) %>%
     row_append("perc_wrong")
   
   semi_trimmed_df %>%
     filter(is.na(Accuracy)) %>%
     nrow %>%
     divide_by(nrow(semi_trimmed_df)) %>%
+    percent(.1) %>%
     row_append("perc_NAcc")
 
   correct_trials <- filter(semi_trimmed_df, Accuracy)
-    
+  
+  correct_trials %>%
+    nrow %>%
+    divide_by(n_incorrect_trials + nrow(correct_trials)) %>%
+    percent(.1) %>%
+    row_append("perc_correct")
   
   # Using the same word a second time
   
@@ -214,7 +259,8 @@ stats_graph_and_methods <- function(exact_resp_req, keep_first_block,
     nrow %>%
     subtract(nrow(first_word_trials)) %>%
     divide_by(nrow(correct_trials)) %>%
-    row_append("word_repeat")
+    percent(.1) %>%
+    row_append("perc_word_repeat")
   
   
   # Early trials
@@ -223,7 +269,14 @@ stats_graph_and_methods <- function(exact_resp_req, keep_first_block,
     filter(RT < .3) %>%
     nrow %>%
     divide_by(nrow(first_word_trials)) %>%
-    row_append("too_quick")
+    percent(.01) %>%
+    row_append("perc_too_quick")
+  
+  first_word_trials %>%
+    filter(RT < .3) %>%
+    nrow %>%
+    as.english %>%
+    row_append("total_too_quick")
 
   
   # Slow trials
@@ -232,7 +285,8 @@ stats_graph_and_methods <- function(exact_resp_req, keep_first_block,
     filter(!Timely_Response) %>%
     nrow %>%
     divide_by(nrow(first_word_trials)) %>%
-    row_append("too_slow")
+    percent(.1) %>%
+    row_append("perc_too_slow")
   
   
   # No RT detected
@@ -241,7 +295,8 @@ stats_graph_and_methods <- function(exact_resp_req, keep_first_block,
     filter(is.na(RT)) %>%
     nrow %>%
     divide_by(nrow(first_word_trials)) %>%
-    row_append("no_RT")
+    percent(.1) %>%
+    row_append("perc_no_RT")
   
   
   # Percentage of trials preserved
@@ -249,12 +304,48 @@ stats_graph_and_methods <- function(exact_resp_req, keep_first_block,
   cleaned_and_filtered_df %>%
     nrow %>%
     divide_by(possible_tot_trials) %>%
-    row_append("preserved")
+    percent(.1) %>%
+    row_append("perc_preserved")
+  
+  # Total trials preserved
+  
+  cleaned_and_filtered_df %>%
+    nrow %>%
+    row_append("total_preserved")
+  
+  
+  
+  
+  # Neutral RT diff between dog and beaver
+  
+  # neutral_timings %>%
+  #   pull(baseline_RT) %>%
+  #   #  sd %>%
+  #   hist()
+  # row_append("neutral_rt_sd")
+  
+  dog_rt <- neutral_timings %>%
+    filter(Dominant_Response == "dog") %>%
+    pull(baseline_RT)
+  
+  neutral_timings %>%
+    filter(Dominant_Response == "beaver") %>%
+    pull(baseline_RT) %>%
+    subtract(dog_rt) %>%
+    multiply_by(1000L) %>%
+    round %>%
+    row_append("beaver_minus_dog")
+    
   
   as_tibble_row(running_row)
 
 }
 
+make_term_more_interpretable <- function(term){
+  term %>%
+    str_replace_all("(In)*(C|c)ongruent:*", "__x__") %>%
+    str_remove("__x__$")
+}
 
 get_sigs <- function(mixed_effect_model, col_suffix) {
   mixed_effect_model %>%
@@ -263,14 +354,19 @@ get_sigs <- function(mixed_effect_model, col_suffix) {
       term, "(Congruency.*Bias)|.*prev_RT")) %>%
     mutate(
       across(p.value, stars.pval),
-      term = term %>%
-        str_replace_all("(In)*(C|c)ongruent:*", "__x__") %>%
-        str_remove("__x__$") %>%
+      term =  make_term_more_interpretable(term) %>%
         paste(col_suffix, ., sep = "_")) %>%
     pivot_wider(id_cols = c(), names_from = term, values_from = p.value) %>%
     mutate(across(everything(), list(sigstars = ~ str_count(., "\\*"))))
 }
 
+
+
+
+
+
+
+# Outputs -----------------------------------------------------------------
 
 results <- c("exact_resp_req",
   "keep_first_block",
@@ -283,9 +379,15 @@ results <- c("exact_resp_req",
   as_tibble %>%
   filter(!(keep_first_block & cautious_regr & !keep_last_three_blocks),
          or(keep_first_block, keep_last_three_blocks)) %>%
-  mutate(future_pmap_dfr(., stats_graph_and_methods))
+  # filter(
+  #   !exact_resp_req,
+  #   keep_first_block,
+  #   keep_last_three_blocks,
+  #   cautious_regr
+  # ) %>%
+  mutate(future_pmap_dfr(., output_list_per_analysis_combo))
 
-results %>%
+results_holds_up_diff_analysis_choices <- results %>%
   mutate(map2_dfr(Blocks_interaction, "Blocks", get_sigs),
          map2_dfr(Locations_interaction, "Locations", get_sigs),
          across(starts_with("Blocks"), ~ ifelse(keep_last_three_blocks,         # Ignore cells where we're both controlling for participant but only including...
@@ -306,100 +408,146 @@ results_with_preferred_params <- filter(
   cautious_regr
 )
 
-results_with_preferred_params %>%
-  pull(Blocks_interaction) %>%
-  pluck(1) %>%
-  tidy
+results_ignoring_block_1 <- filter(
+  results,
+  !exact_resp_req,
+  !keep_first_block,
+  keep_last_three_blocks,
+  cautious_regr
+)
 
+effect_stats <- function(condition, row_choice,
+                         df = results_with_preferred_params){
+  df %>%
+    pull(condition) %>%
+    pluck(1L) %>%
+    tidy %>%
+    mutate(
+      across(c(estimate, std.error, statistic),
+             ~ if_else(.^2 < .0001, round(., 3), round(., 2))),
+      across(p.value,
+             ~ case_when(
+               . < .001 ~ "< .001",
+               . < .01 ~ paste("=", round(., 3)),
+               TRUE ~ paste("=", round(., 2)))
+      ),
+      across(p.value, ~ str_remove(., "0(?=\\.)"))) %>%
+    mutate(term = make_term_more_interpretable(term)) %>%
+    group_by(term) %>%
+    transmute(effect_stats = paste0(
+      "$\\beta$ = ", estimate,
+      ", *SE* = ", std.error,
+      ", z = ", statistic,
+      ", *p* ", p.value
+    )) %>%
+    filter(term == row_choice) %>%
+    pull(effect_stats)
+}
 
-stargazer::stargazer(data = list(
+table_1 <- results_with_preferred_params %>%
+  pull(table_1) %>%
+  pluck(1L, 1L)
+
+figure_2 <- results_with_preferred_params %>%
+  pull(fig_2) %>%
+  pluck(1L)
+
+table_2 <- stargazer(list(
   results_with_preferred_params %>%
     pull(Blocks_interaction) %>%
-    pluck(1),
+    pluck(1L),
   results_with_preferred_params %>%
     pull(Locations_interaction) %>%
-    pluck(1)),
-  type = "latex", 
-          header = FALSE, title = "Regression Results", 
-          keep.stat = c("n", "rsq"))
+    pluck(1L)),
+  
+  # type = "html",
+  #note that the argument is "out" not "file"
+  # out="star_descriptive.doc",
+  
+  type = "latex",
+  keep.stat = c("n", "ll"),
+  single.row = TRUE,
+  title = str_wrap(
+    "Estimates of raw RTs regressed in a generalized linear mixed-effects
+     model onto trial congruency, block- or location-wise congruency,
+     and previous trial RT"),
+  header = FALSE,
+  dep.var.caption  = "Raw Response Times",
+  dep.var.labels   = "By condition",
+  column.labels = c("LWPC", "CSPC"),
+  model.numbers = FALSE,
+  star.cutoffs = c(0.05, 0.01, 0.001),
+  covariate.labels = c("Trial congruency",
+                       "Congruency bias (block or location)",
+                       "Previous trial RT",
+                       "Trial congruency X Congruency bias",
+                       "Trial congruency X Previous trial RT",
+                       "Congruency bias X Previous trial RT",
+                       "Three-way interaction"))
 
-
-
-
-# need to compare standard errors i guess, make sure it's just a lagged onset time in my experiment; could break my data into the first 62 trials for each participant, and look at the sd among those first 62 for mostly congruent or mostly incongruent first blocks; and compare that with the first 62 trial for Spinelli's participants (or at least a random selection of his participants so his group size is the same as mine (or maybe if i use standard error i can include ll his participants))
-picnam_RT %>% group_by(list_type) %>% summarise(meanRT = sd(RT)) %>% arrange(list_type, meanRT) %>% View
-
-# quite a bit of variation in how long the recordings last, even though they should all last exactly the same amount
-cleaned_df %>% group_by(Sub_Code, Block) %>% summarise(Recording_Duration = mean(Recording_Duration)) %>% arrange(Recording_Duration) %>% View 
-
-# but it looks like the block are actually taking a similar amount of time as the audio; it's not necessarily (or just) the audio; why would blocks take different amounts of time? and how consistent are these block durations for each person?
-raw_df %>%
-  group_by(Sub_Code, Block) %>%
-  summarise(Time_Skipped = max(Stim_Offset) %>%
-              subtract(min(Trial_Start)) %>%
-              divide_by(1000)) %>% arrange(Time_Skipped) %>% View
-
-# people with a full screen off at one point encompass more of the instances of inconsistent durations across blocks for a given participant, but still doesn't explain all of the big duration diffs; still, looks like a lot of the differences are between rather than within subject; next i'll want to look at how the recording durations compare to the behavioral block length; also, are there specific trials that are taking longer that explain the diff in trial length? are the diffs present for all trials
-read_csv("/Users/jackdolgin/Dropbox/Stages of Life/Grad School/Repos/Adaptive-Control/online-task/analyses/transcribe/transcriptions_merged.csv") %>%
-  group_by(Sub_Code) %>%
-  summarise(n = n_distinct(Trial)) %>%
-  arrange(n) %>% inner_join( raw_df %>%
-                               filter(Block > 0) %>%
-                               group_by(Sub_Code, Block) %>%
-                               summarise(Time_Skipped = max(Stim_Offset) %>%
-                                           subtract(min(Trial_Start)) %>%
-                                           divide_by(1000)) %>% 
-                               group_by(Sub_Code) %>%
-                               summarise(Diff_Durations = max(Time_Skipped) - min(Time_Skipped))
-  ) %>%
-  arrange(Diff_Durations) %>% View
-
-
-raw_df %>%
-  filter(Trial > 0) %>%
-  group_by(Sub_Code, Block) %>%
-  mutate(Trial_Duration = Trial_Start - lag(Trial_Start)) %>%
-  ungroup() %>%
-  arrange(Trial_Duration) %>%
-  select(Trial_Duration, Sub_Code, Trial) %>%
-  View
 
 # Tabulate Demographics ---------------------------------------------------
 
 demographics <- cleaned_df %>%
   group_by(Sub_Code) %>%
-  filter(row_number() == 1L) %>%
+  slice_sample() %>%
   ungroup()
 
-# Participants per task
-count(demographics, Task)
+age_mean <- demographics %>%
+  pull(Age) %>%
+  mean(na.rm = TRUE) %>%
+  round(1L)
 
-# Age per task
-demographics %>%
-  group_by(Task) %>%
-  summarise(across(Age, list(mean = ~mean(., na.rm = TRUE),
-                             sd = ~sd(., na.rm = TRUE))))
+age_sd <- demographics %>%
+  pull(Age) %>%
+  sd(na.rm = TRUE) %>%
+  round(1L)
 
-# Age across tasks
-summarise(demographics,
-          across(Age, list(mean = ~mean(., na.rm = TRUE),
-                           sd = ~sd(., na.rm = TRUE))))
-
-# Gender per task
-count(demographics, Task, Gender)
-
-# Gender across tasks
-count(demographics, Gender)
-
-# Ethnicity per task
-count(demographics, Task, Ethnicity)
+total_males <- demographics %>%
+  filter(Gender == "M") %>%
+  nrow
 
 
 # Assorted ----------------------------------------------------------------
 
+num_drawings_used <- cleaned_df %>%
+  pull(Dominant_Response) %>%
+  n_distinct()
+
+num_possible_drawings <- here("images", "IPNP", "IPNP_spreadsheet.csv") %>%
+  read_csv %>%
+  filter(Action_or_Object == "Object") %>%
+  nrow
+
+num_main_trials_per_participant <- cleaned_df %>%
+  count(Sub_Code) %>%
+  pull(n) %>%
+  max
+
+num_trials_per_block <- cleaned_df %>%
+  count(Sub_Code, Block) %>%
+  pull(n) %>%
+  max
+
+raw_mturk_df <- read_csv(here(analyses_dir, "raw_data", "raw_from_mturk.csv"))
+
+num_practice_per_participant <- raw_mturk_df %>%
+  filter(Block < 0) %>%
+  count(Sub_Code) %>%
+  pull(n) %>%
+  max
+
+non_matching_words <- raw_mturk_df %>%
+  filter(Congruency == "Incongruent") %>%
+  count(Sub_Code) %>%
+  pull(n) %>%
+  max
+
+
+
 # Dimensions of the refitted IPNP images
 
-cleaned_df %>%
+pic_heights <- cleaned_df %>%
   pull(Image_Path) %>%
   unique() %>%
   map_dfr(function(x) {
@@ -407,58 +555,8 @@ cleaned_df %>%
       dim %>%
       as_tibble_row(.name_repair = ~ make.names(c("height", "width")))
   }) %>%
-  summarise(across(everything(), list(min = min, max = max)))
+  pull(height)
 
+min_pic_height <- min(pic_heights)
+max_pic_height <- max(pic_heights)
 
-# Difference between behavioral data and recording, by block number
-
-cleaned_df %>%
-  group_by(Sub_Code, Block) %>%
-  filter(row_number() == 1) %>%
-  group_by(Block) %>%
-  summarise(across(c(Recording_Duration, Time_Skipped), mean)) %>%
-  mutate(Tots = Recording_Duration + Time_Skipped,
-         across(where(is.numeric), as.character))
-
-raw_imported %>%
-  group_by(Sub_Code, Block) %>%
-  mutate(
-    across(Nationality, ~if_else(is.na(.) | . == "O", "en-US", .)),
-    Time_Skipped = max(Stim_Offset) %>%
-      subtract(min(Trial_Start)) %>%
-      divide_by(1000) %>%
-      subtract(Recording_Duration),
-    Next_Lead = lead(Stim_Onset, default = 9999999)) %>%
-  ungroup() %>%
-  filter(Next_Lead != 9999999,
-         ! Trial %in% c(1, 63, 125, 187)) %>%
-  select(Trial_Start, Fix_Onset, Fix_Offset, Stim_Onset, Stim_Offset, Next_Lead,
-         Recording_Duration, Time_Skipped, Sub_Code, Block, Trial) %>% 
-  mutate(Time_Diff = (Next_Lead - Stim_Onset)) %>%
-  group_by(Sub_Code, Block) %>%
-  mutate(max_Time_Diff = max(Time_Diff),
-         mean_Time_Diff = mean(Time_Diff)) %>%
-  ungroup() %>%
-  arrange(Time_Diff) %>%
-  ungroup() %>%
-  mutate(Fix_Onset_Diff = Fix_Onset - Trial_Start,
-         Fix_Offset_Dif = Fix_Offset - Fix_Onset,
-         Stim_Onset_Diff = Stim_Onset - Fix_Offset,
-         Stim_Offset_Diff = Stim_Offset - Stim_Onset,
-         Trial_Start_Diff = Next_Lead - Trial_Start,
-         across(c(Fix_Onset_Diff, Fix_Offset_Dif, Stim_Onset_Diff,
-                  Stim_Offset_Diff,Trial_Start_Diff), ~. - median(.) )) %>%
-  group_by(Sub_Code, Block) %>%
-  filter(row_number() == 1) %>%
-  View()
-
-
-adf %>% pull(RT_Predictive_Blocks) %>%
-  pluck(1) %>%
-  tidy() %>%
-  filter(grepl(
-    "(Congruency.*Bias)|.*prev_RT", term )) %>%
-  mutate(term = term %>%
-           str_replace_all("(In)*(C|c)ongruent:*", "__x__") %>%
-           str_remove(., "__x__$")) %>%
-  pivot_wider(id_cols = c(), names_from = term, values_from = p.value)
