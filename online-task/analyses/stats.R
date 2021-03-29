@@ -2,7 +2,7 @@
 
 # install.packages("devtools")
 if (!require(devtools)) install.packages("pacman")
-pacman::p_load(gtools, DescTools, tidyverse, furrr, here, magrittr, glue, lme4,
+pacman::p_load(gtools, DescTools, tidyverse, furrr, here, magrittr, lme4,
                lmerTest, broomExtra, cowplot, stargazer, png, scales, english)
 
 analyses_dir <- here("online-task", "analyses")
@@ -49,7 +49,7 @@ output_list_per_analysis_combo <- function(exact_resp_req, keep_first_block,
     group_by(Sub_Code, Block) %>%
     mutate(across(c(Accuracy, Timely_Response, RT, First_Word_Use),
                   lag, .names = "prev_{.col}")) %>%
-    slice(-1L) %>%                                                              # remove the first trial of each block
+    dplyr::slice(-1L) %>%                                                              # remove the first trial of each block
     filter(Keep_Block) %>%
     ungroup()
   
@@ -87,7 +87,8 @@ output_list_per_analysis_combo <- function(exact_resp_req, keep_first_block,
   neutral_timings <- cleaned_and_filtered_df %>%
     filter(Task == "Neutral") %>%
     group_by(Dominant_Response) %>%
-    summarise(baseline_RT = mean(RT), .groups = "drop")
+    summarise(baseline_RT = mean(RT), .groups = "drop") %>%
+    ungroup()
   
   finished_df <- cleaned_and_filtered_df %>%
     filter(str_detect(Task, "Predictive")) %>%
@@ -98,7 +99,8 @@ output_list_per_analysis_combo <- function(exact_resp_req, keep_first_block,
     ) %>%
     group_by(Task) %>%
     mutate(across(prev_RT, scale),
-           unique_block = paste(Sub_Code, Block, sep = "_"))
+           unique_block = paste(Sub_Code, Block, sep = "_")) %>%
+    ungroup()
 
   
   # Graph and Stats -------------------------------------------------------
@@ -179,7 +181,7 @@ output_list_per_analysis_combo <- function(exact_resp_req, keep_first_block,
       `\\emph{DF}` = df,
       `\\emph{p}` = p.value) %>%
     xtable::xtable(
-      align = "llll|ccccc",
+      align = "llll|rrrrr",
       caption = stringr::str_wrap(
         "Linear mixed-effects model estimates of a congruency effect among
       each combination of condition, trial congruency, and typical block
@@ -466,7 +468,8 @@ table_2 <- stargazer(list(
   
   type = "latex",
   keep.stat = c("n", "ll"),
-  single.row = TRUE,
+  #single.row = TRUE,
+  align = TRUE,
   title = str_wrap(
     "Estimates of raw RTs regressed in a generalized linear mixed-effects
      model onto trial congruency, block- or location-wise congruency,
