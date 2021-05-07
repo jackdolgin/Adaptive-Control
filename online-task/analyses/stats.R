@@ -3,19 +3,21 @@
 # install.packages("devtools")
 if (!require(devtools)) install.packages("pacman")
 pacman::p_load(gtools, DescTools, tidyverse, furrr, here, magrittr, lme4,
-               lmerTest, broomExtra, cowplot, stargazer, png, scales, english)
+               lmerTest, broomExtra, cowplot, stargazer, png, scales, brms,
+               bayestestR, performance, rlang, insight, logspline, future,
+               future.batchtools, tidybayes, glue)
 
 analyses_dir <- here("online-task", "analyses")
-
-no_cores <- availableCores() - 1L
-plan(multisession, workers = no_cores)
 
 cleaned_df <- read_csv(here(analyses_dir, "cleaned.csv"))
 
 
 output_list_per_analysis_combo <- function(exact_resp_req, keep_first_block,
-                                    keep_last_three_blocks, cautious_regr){
+                                    keep_last_three_blocks, cautious_regr,
+                                    preferred_params, rerun_find_best_brm,
+                                    regenerate_bayes_power_analysis, platform){
   
+
   source(here(analyses_dir, "graph_builders.R"), local = TRUE)
   
   running_row <- list()
@@ -98,12 +100,36 @@ output_list_per_analysis_combo <- function(exact_resp_req, keep_first_block,
       Bias = coalesce(Block_Bias, Task_Side_Bias)
     ) %>%
     group_by(Task) %>%
-    mutate(across(prev_RT, scale),
-           unique_block = paste(Sub_Code, Block, sep = "_")) %>%
-    ungroup()
-
+    mutate(across(prev_RT, scale)) %>%
+    ungroup() %>%
+   mutate(
+     unique_block = paste(Sub_Code, Block, sep = "_"),
+     across(c(Congruency, Bias, Sub_Code, Dominant_Response, unique_block),
+            as_factor),
+     across(c(Congruency, Bias), ~fct_relevel(., sort))
+   )
   
-  # Graph and Stats -------------------------------------------------------
+#  row_append(list(finished_df), "finished_df")
+
+  possible_conditions <- finished_df %>%
+    filter(Task == "Predictive_Locations") %>%
+    count(Congruency, Bias) %>%
+    nrow
+  
+  mean_condition_trials <- finished_df %>%
+    filter(Task == "Predictive_Locations") %>%
+    count(Sub_Code) %>%
+    summarise(mean(n)) %>%
+    pull %>%
+    RoundTo(possible_conditions) %>%
+    divide_by(possible_conditions)
+     
+  blocks_per_pcpt <- finished_df %>%
+    pull(Block) %>%
+    n_distinct()
+  
+  
+  # Frequentist Stats and Graph -------------------------------------------
     
   regress_both_tasks <- function(df, keys, dv, analysis_type){
     
@@ -130,7 +156,7 @@ output_list_per_analysis_combo <- function(exact_resp_req, keep_first_block,
         tidy
     } else if (dv == "RT") {
       
-      fitted <-glmer(
+      fitted <- glmer(
         equation,
         df,
         Gamma(link="identity"),
@@ -211,6 +237,260 @@ output_list_per_analysis_combo <- function(exact_resp_req, keep_first_block,
     group_walk(~ regress_both_tasks(.x, .y, "RT", "difference"))
 
   
+  # Bayesian Stats and Graph ----------------------------------------------
+  
+  if (!preferred_params) {
+    NULL
+  } else {
+    
+    compare_bayes_mdls_name <- here(
+      analyses_dir,
+      "compare_bayesian_models.csv"
+    )
+    power_analyses_csv_name <- here(
+      analyses_dir,
+      "bayesian_power_by_sample_size.csv"           # might want to eventually write it to a different directory
+    )
+    
+    pick_brm_model <- function(x){
+      read_csv(compare_bayes_mdls_name) %>%
+        filter(omit_prev_RT > x) %>%
+        filter(LOOIC - min(LOOIC) < 2 * LOOIC_SE) %>%
+        arrange(desc(omit_prev_RT), LOOIC) %>%
+        slice_head() %>%
+        pull(filename) %>%
+        readRDS(here(analyses_dir, "bayesian_fits", .))
+    }
+    
+    
+    if (any(c(rerun_find_best_brm, regenerate_bayes_power_analysis))){
+      if (platform == "local"){
+        
+        no_cores <- availableCores() - 1L
+        plan(multisession, workers = no_cores)
+        
+      } else if (platform == "cluster"){
+        
+        plan(
+          batchtools_slurm,
+          workers = 4L,
+          resources=list(
+            job_name = "run_on_cluster",
+            log_file = "run_on_cluster.log",
+            queue = "medium",
+            service = "short",
+            ncpus = 4L,
+            memory = '5g',
+            walltime = "10:00:00"),
+          template = here(analyses_dir, "template_slurm.tmpl")
+        )
+      }
+      
+      brm_with_custom_priors <- function(a_formula, df, familia, priors,
+                                         sample_prior, to_be_seed, filename){
+        brm(
+          a_formula,
+          df,
+          familia,
+          priors,
+          sample_prior = sample_prior,
+          save_pars = save_pars(all = T),
+          iter = 5000L,
+          cores = 4L,
+          backend = if_else(platform == "local", "rstan", "cmdstanr"),
+          silent = 2L,
+          seed = to_be_seed,
+          file = filename,
+          file_refit = "on_change",
+          refresh = 0L
+        )
+      }
+      
+      custom_describe_posterior <- function(amodel){
+        amodel %>%
+          describe_posterior(
+            test = c("p_direction", "rope", "bf"),
+            ci = 1,                                                               # as suggested by 10.3389/fpsyg.2019.02767
+            rope_ci = 1,                                                          # ditto
+            rope_range=c(-.005, Inf),
+            parameters = "Congruency.*BiasIncongruent$"
+          ) %>%
+          as_tibble %>%
+          mutate(across(
+            ends_with(c("Median", "low",  "high")),
+            family(amodel)$linkinv
+          ))
+      }
+      
+      if (rerun_find_best_brm){
+        
+        minimum_priors <- c(
+          set_prior('normal(1.75, .25)', coef = "Intercept"),
+          set_prior('normal(.275, .1)', coef='CongruencyIncongruent'),
+          set_prior('normal(.012, .1)', coef='BiasIncongruent'),
+          set_prior('normal(-.02, .07)', coef='CongruencyIncongruent:BiasIncongruent')
+        )
+        
+        prev_RT_priors <- c(
+          set_prior('normal(.04, .04)', coef='prev_RT'),
+          set_prior('normal(.003, .02)', coef='CongruencyIncongruent:prev_RT'),
+          set_prior('normal(0, .02)', coef='BiasIncongruent:prev_RT'),
+          set_prior('normal(0, .02)', coef='CongruencyIncongruent:BiasIncongruent:prev_RT')
+        )
+        
+        brm_models <- tibble(
+          prior_col = list(
+            minimum_priors,
+            c(minimum_priors, prev_RT_priors),
+            c(minimum_priors, prev_RT_priors)
+          ),
+          formulae = c(
+            str_wrap("
+          RT ~ 0 + Intercept + Congruency * Bias + (1 | Sub_Code)
+          + (1 | Dominant_Response) + (1 | unique_block)
+        ", 1e5),                                                                # set line long enough that new line symbol /n doesn't appear in the formula
+            str_wrap("
+          RT ~ 0 + Intercept + Congruency * Bias * prev_RT
+          + (Congruency | Sub_Code) + (1 | Dominant_Response)
+          + (1 | unique_block)
+        ", 1e5),
+            str_wrap("
+          RT ~ 0 + Intercept + Congruency * Bias * prev_RT
+          + (Congruency + Bias | Sub_Code)
+          + (Congruency + Bias | Dominant_Response) + (1 | unique_block)
+        ", 1e5)
+          ),
+          keeper = c(
+            TRUE,
+            platform != "local" %>%
+              rep(2)
+          )
+        ) %>%
+          mutate(omit_prev_RT = !str_detect(formulae, "prev_RT")) %>%
+          tidyr::expand(
+            nesting(
+              prior_col,
+              formulae,
+              omit_prev_RT,
+              keeper
+            ),
+            fam = list(
+              exgaussian(),
+              skew_normal(),
+              shifted_lognormal()
+            )
+          ) %>%
+          filter(keeper) %>%
+          mutate(
+            filename = glue("brm_fit_{row_number()}.rds"),
+            models = future_pmap(
+              .f = brm_with_custom_priors,
+              .l = list(
+                formulae,
+                list(filter(finished_df, Task == "Predictive_Locations")),
+                fam,
+                prior_col,
+                "yes",
+                row_number(),
+                here(
+                  analyses_dir,
+                  "bayesian_fits",
+                  filename
+                )
+              )
+            )) %>%
+          walk(function(x){
+            if (class(pluck(x, 1)) == "brmsfit"){
+              all_models <<- list_modify(x, metrics = "LOOIC")
+            }
+          }) %>%
+          mutate(
+            exec("compare_performance", !!!all_models),
+            across(fam, . %>% map_chr( ~{pluck(.x, 1)}))
+          ) %>%
+          select(-c(Name, prior_col, models)) %>%
+          write_csv(compare_bayes_mdls_name)  # can have an if statement above about whether to let ppl calculate the stats on their own or just start off with the csv
+        
+      }
+      
+      
+      brm_model_no_prev_RT <- pick_brm_model(0)
+      
+      
+      if (regenerate_bayes_power_analysis) {
+        
+        seq(50, 100, 10) %>%
+          future_map_dfr(function(sample_size){
+            
+            post_draws_simulated <- sample_size %>%
+              seq %>%
+              map_dfr(~{
+                finished_df %>%
+                  filter(Task == "Predictive_Locations") %>%
+                  count(Congruency, Bias) %>%
+                  mutate(across(n, ~round(. * mean_condition_trials / sum(n)))) %>%
+                  uncount(n) %>%
+                  sample_n(n()) %>%
+                  mutate(n = blocks_per_pcpt) %>%
+                  uncount(n) %>%
+                  mutate(
+                    Sub_Code = .x,
+                    Dominant_Response = row_number(),
+                    unique_block = row_number() %>%
+                      multiply_by(blocks_per_pcpt) %>%
+                      divide_by(n()) %>%
+                      ceiling %>%
+                      paste0(Sub_Code, "_", .)
+                  )
+              }) %>%
+              mutate(across(everything(), as_factor)) %>%
+              add_predicted_draws(
+                brm_model_no_prev_RT,
+                n=100,
+                allow_new_levels=TRUE
+              )
+            
+            post_draws_simulated %>%
+              group_by(.draw) %>%
+              group_modify(~{
+                brm_with_custom_priors(
+                  brm_model_no_prev_RT %>%
+                    pluck(formula) %>%
+                    as.character %>%
+                    pluck(1) %>%
+                    str_replace(".*(?= ~)", ".prediction"),
+                  .x,
+                  brm_model_no_prev_RT$family,
+                  minimum_priors,
+                  "yes",
+                  1L,
+                  NULL
+                ) %>%
+                  custom_describe_posterior()
+              }) %>%
+              ungroup() %>%
+              summarise(
+                across(ROPE_Percentage, ~ between(., .01, .99) %>%
+                         not %>%
+                         sum %>%
+                         divide_by(n())),
+                across(where(is.numeric), mean)
+              ) %>%
+              mutate(sample_size)
+          }) %>%
+          write_csv(power_analyses_csv_name)
+      }
+    }
+    
+    best_brm_model <- pick_brm_model(-1)
+    
+    posterior_description <- custom_describe_posterior(best_brm_model)
+    
+    brms::pp_check(best_brm_model)
+    
+  }    
+  
+  
   # Tabulate Methods Section Information ----------------------------------
   
   possible_tot_trials <- semi_trimmed_df %>%
@@ -277,7 +557,7 @@ output_list_per_analysis_combo <- function(exact_resp_req, keep_first_block,
   first_word_trials %>%
     filter(RT < .3) %>%
     nrow %>%
-    as.english %>%
+    format_number %>%
     row_append("total_too_quick")
 
   
@@ -387,7 +667,21 @@ results <- c("exact_resp_req",
   #   keep_last_three_blocks,
   #   cautious_regr
   # ) %>%
-  mutate(future_pmap_dfr(., output_list_per_analysis_combo))
+  mutate(
+    preferred_params = if_else(
+      !exact_resp_req &
+        keep_first_block &
+        keep_last_three_blocks &
+        cautious_regr,
+      TRUE,
+      FALSE,
+      FALSE,
+      FALSE,
+      "cluster" # either local or cluster
+    ),
+    # future_pmap_dfr(., output_list_per_analysis_combo)
+    pmap_dfr(., output_list_per_analysis_combo)
+  )
 
 results_holds_up_diff_analysis_choices <- results %>%
   mutate(map2_dfr(Blocks_interaction, "Blocks", get_sigs),
@@ -402,13 +696,7 @@ results_holds_up_diff_analysis_choices <- results %>%
   nrow %>%
   equals(1L)
 
-results_with_preferred_params <- filter(
-  results,
-  !exact_resp_req,
-  keep_first_block,
-  keep_last_three_blocks,
-  cautious_regr
-)
+results_with_preferred_params <- filter(results, preferred_params)
 
 results_ignoring_block_1 <- filter(
   results,
@@ -425,22 +713,18 @@ effect_stats <- function(condition, row_choice,
     pluck(1L) %>%
     tidy %>%
     mutate(
-      across(c(estimate, std.error, statistic),
-             ~ if_else(.^2 < .0001, round(., 3), round(., 2))),
-      across(p.value,
-             ~ case_when(
-               . < .001 ~ "< .001",
-               . < .01 ~ paste("=", round(., 3)),
-               TRUE ~ paste("=", round(., 2)))
-      ),
-      across(p.value, ~ str_remove(., "0(?=\\.)"))) %>%
-    mutate(term = make_term_more_interpretable(term)) %>%
+      across(c(estimate, std.error), ~format_value(., 3)),
+      across(statistic, ~format_value(., 2)),
+      across(p.value, format_p),
+      across(p.value, ~str_remove(., "p")),
+      term = make_term_more_interpretable(term)
+    ) %>%
     group_by(term) %>%
     transmute(effect_stats = paste0(
       "$\\beta$ = ", estimate,
       ", *SE* = ", std.error,
       ", z = ", statistic,
-      ", *p* ", p.value
+      ", *p*", p.value
     )) %>%
     filter(term == row_choice) %>%
     pull(effect_stats)

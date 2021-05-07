@@ -1,0 +1,34 @@
+#!/bin/bash -l
+
+
+#SBATCH --job-name=<%= resources$job_name %> ## Name of the job
+#SBATCH --output=<%= resources$log_file %> ## Output is sent to logfile, stdout + stderr by default
+#SBATCH --error=<%= resources$log_file %>
+#SBATCH --partition=<%= resources$queue %>
+#SBATCH --qos <%= resources$service %> ## QOS
+#SBATCH --cpus-per-task=<%= resources$ncpus %>
+#SBATCH --mem-per-cpu=<%= resources$memory %>
+#SBATCH --time <%= resources$walltime %> ## walltime in hh:mm:ss
+#SBATCH --ntasks=1
+#SBATCH --mail-type=BEGIN,END,FAIL
+#SBATCH --mail-user=jdolgin@wustl.edu
+
+
+<%= if (!is.null(resources$partition)) sprintf(paste0("#SBATCH --partition='", resources$partition, "'")) %>
+<%= if (array.jobs) sprintf("#SBATCH --array=1-%i", nrow(jobs)) else "" %>
+
+## Initialize work environment
+## my setup might be weird, but otherwise this line is where I'd have to load the miniconda module (e.g., `load miniconda`)
+conda activate jack-r-env ## replace `jack-r-env` with whatever your conda environment is named
+
+## Export value of DEBUGME environemnt var to slave
+export DEBUGME=<%= Sys.getenv("DEBUGME") %>
+
+## <%= sprintf("export OMP_NUM_THREADS=%i", resources$omp.threads) -%>
+## <%= sprintf("export OPENBLAS_NUM_THREADS=%i", resources$blas.threads) -%>
+## <%= sprintf("export MKL_NUM_THREADS=%i", resources$blas.threads) -%>
+
+## Run R:
+## we merge R output with stdout from SLURM, which gets then logged via --output option
+## Rscript --no-restore --no-save -e 'batchtools::doJobCollection("<%= uri %>")'
+Rscript -e 'batchtools::doJobCollection("<%= uri %>")'
