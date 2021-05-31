@@ -5,14 +5,14 @@ let mediaRecorder, audioStartTime;
 function startAudio(expectingCompletion) {
 
     /*
-   You can call this function with `startAudio(true)` or `startAudio(false)`
+   You can call this function with "startAudio(true)" or "startAudio(false)"
    The boolean parameter indicates whether to display a progress bar while
    the participant is waiting for the data to upload to the server
 
    Calling the function begins the recording, but it won't upload the data
-   until the recording ends. To end the recording, call `mediaRecorder.stop()`
+   until the recording ends. To end the recording, call "mediaRecorder.stop()"
 
-   In theory the variable `audioStartTime` is supposed to indicate when the
+   In theory the variable "audioStartTime" is supposed to indicate when the
    recording began. However, I've found that there may be a delay between
    when the function is called and when the actual recording starts. My
    workaround in my analyses is just to the time in the experiment when
