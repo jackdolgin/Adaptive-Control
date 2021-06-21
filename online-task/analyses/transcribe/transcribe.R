@@ -16,9 +16,9 @@ here("Authentication_File.json") %T>%
 
 raw_dir <- here("online-task", "analyses", "raw_data")
 audio_dir <- here(raw_dir, "audio")
-transcribe_dir <- here("online-task", "analyses", "transcribe")
 
-pcpts_with_all_audio_saved <- dir_ls(path(audio_dir, "full")) %>%
+pcpts_with_all_audio_saved <- path(audio_dir, "full") %>%
+  dir_ls(regexp = "_[[:alnum:]].wav") %>%                                       # Ignore audio from practice trial
   str_extract("(?<=full/)[[:alnum:]]*") %>%
   as_tibble_col(column_name = "Sub_Code") %>%
   count(Sub_Code) %>%
@@ -34,6 +34,20 @@ pcpts_with_all_audio_saved <- dir_ls(path(audio_dir, "full")) %>%
     "5g1a5F9S",                                                                 # second time participating
     "FPiMSr70",                                                                 # second time participating
     "1ADP4oEP",                                                                 # second time participating
+    "wXzdYKqh",                                                                 # second time participating
+    "6Ii4dBYv",                                                                 # second time participating
+    "ONZH07rh",                                                                 # second time participating
+    "A9Dz1vG4",                                                                 # second time participating
+    "o69A0VsK",                                                                 # second time participating
+    "LOS9PDfF",                                                                 # second time participating
+    "1e1VFWjI",                                                                 # second time participating
+    "57263529",                                                                 # second time participating
+    "ANrKJmFe",                                                                 # second time participating
+    "hiYUAiLF",                                                                 # second time participating
+    "4YmuWpvJ",                                                                 # second time participating
+    "FpgJwbjL",                                                                 # second time participating
+    "HaMibOwc",                                                                 # second time participating
+    "pGjEGy6F",                                                                 # second time participating
     "rd5Rou3C",                                                                 # third time participating
     "gt3skyFD",                                                                 # error issue reading their voice data
     "ZDRIrjxA",                                                                 # error issue reading their voice data
@@ -43,6 +57,7 @@ pcpts_with_all_audio_saved <- dir_ls(path(audio_dir, "full")) %>%
     "OWNpYNOV",                                                                 # poor command of English
     "tOGmbtQk",                                                                 # too many blank responses, and they didn't seem focused
     "ugpDTAuK",                                                                 # TV on in the background
+    "5pu4UnTu",                                                                 # TV on in the background
     "lgPVM78L"                                                                  # child making noise in background and distracting the speaker
   ))                                                                
 
@@ -114,78 +129,63 @@ list(
                          paste(Label, ., sep = ", "),
                          paste(Dominant_Response, Label, ., sep = ", "))),
          across(Synonyms, ~str_remove(., " NA$"))) %>%
-  write_csv(here(raw_dir, "light_clean_from_mturk.csv"))
-
-light_clean_from_mturk <- here(raw_dir, "light_clean_from_mturk.csv") %>%
-  read_csv
-
-i_max <- light_clean_from_mturk %>%
-  nrow %>%
-  RoundTo(100L, ceiling) %>%
-  divide_by(100L)
-
-for (loop_count in 0L:(i_max - 1L)){
-  while_count <- 0L
-  while (while_count < 5L){
-    tryCatch({
-      light_clean_from_mturk %>%
-        filter(row_number() > (loop_count * 100L),
-               row_number() <= (loop_count * 100L) + 100L) %>%
-        pmap_df(function(Stim_Onset, Trial, End_recording,
-                         Sub_Code, Synonyms, Nationality,
-                         Full_Audio_Path, ...){
-          spliced_audio_dir <- path(audio_dir, "spliced", Sub_Code) %T>%
-            dir_create %>%
-            path(paste0("Trial_", Trial, ".wav"))
-          
-          readWave(Full_Audio_Path, from = Stim_Onset,
-                   to = End_recording, units = "seconds") %T>%
-            writeWave(spliced_audio_dir, extensible = FALSE)
-          
-          transcribed_list <- gl_speech(spliced_audio_dir,
-                                        languageCode = Nationality,
-                                        speechContexts =
-                                          list(phrases = strsplit(Synonyms,
-                                                                  ',') %>%
-                                                 unlist %>%
-                                                 trimws))
-          
-          Sys.sleep(1)
-          
-          precise_timing <- spliced_audio_dir %>%
-            read.wav(filter = list(high = 4000L)) %>%
-            onsets
-          
-          if(length(transcribed_list$timings) > 0L){
-            df <- transcribed_list %>%
-              pluck('transcript') %>%
-              select(transcript, confidence) %>%
-              mutate(across(transcript, trimws))
-          } else {
-            df <- tibble(transcript = NA, confidence = NA)
-          }
-          
-          mutate(df,
-                 Sub_Code,
-                 Trial,
-                 preciseStartTime = pluck(precise_timing, first, "start"),
-                 preciseEndTime = pluck(precise_timing, last, "end"))
-        }) %>%
-        write_csv(here(transcribe_dir,
-                       "chunked",
-                       paste0("transcription_pt", loop_count + 1L,  ".csv")))
-      
-      break
-    }, error=function(e) {         # test this line just for kick's sake
-      while_count <- while_count + 1L
-    }
+  mutate(pmap_dfr(., insistently(function(Stim_Onset, Trial, End_recording,
+                                          Sub_Code, Synonyms, Nationality,
+                                          Full_Audio_Path, ...){
+    
+    spliced_audio_dir <- path(audio_dir, "spliced", Sub_Code) %T>%
+      dir_create %>%
+      path(paste0("Trial_", Trial, ".wav"))
+    
+    readWave(Full_Audio_Path, from = Stim_Onset,
+             to = End_recording, units = "seconds") %T>%
+      writeWave(spliced_audio_dir, extensible = FALSE)
+    
+    here("Authentication_File.json") %T>%
+      gl_auth %>%
+      gcs_auth
+    
+    transcribed_list <- gl_speech(
+      spliced_audio_dir,
+      languageCode = Nationality,
+      speechContexts =
+        list(phrases = strsplit(Synonyms, ',') %>%
+               unlist %>%
+               trimws
+        )
     )
-  }
-}
-
-path(transcribe_dir, "chunked") %>%
-  dir_ls %>%
-  map_df(read_csv) %>%
-  right_join(light_clean_from_mturk) %>%
-  write_csv(here(transcribe_dir, "transcriptions_merged.csv"))
-
+    
+    Sys.sleep(1)
+    
+    precise_timing <- spliced_audio_dir %>%
+      read.wav(filter = list(high = 4000L)) %>%
+      onsets
+    
+    preciseStartTime <- pluck(precise_timing, first, "start")
+    preciseEndTime <- pluck(precise_timing, last, "end")
+    
+    if(length(transcribed_list$timings) > 0L){
+      df <- transcribed_list %>%
+        pluck('transcript') %>%
+        mutate(
+          across(transcript, trimws),
+          across(confidence, as.numeric)
+        ) %>%
+        summarise(
+          across(transcript, ~paste0(., collapse = "")),
+          across(confidence, mean)
+        )
+    } else {
+      df <- tibble(transcript = NA_character_, confidence = NA_real_)
+    }
+    
+    mutate(
+      df,
+      preciseStartTime = if_else(
+        is.null(preciseStartTime), NA_real_, preciseStartTime),
+      preciseEndTime = if_else(
+        is.null(preciseEndTime), NA_real_, preciseEndTime)
+    )
+    
+  }, rate = rate_delay(5)))) %>%
+  write_csv(here("lightly_cleaned_and_transcribed.csv"))
