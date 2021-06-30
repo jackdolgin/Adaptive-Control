@@ -169,7 +169,7 @@ list(
         pluck('transcript') %>%
         mutate(
           across(transcript, trimws),
-          across(confidence, as.numeric)
+          across(confidence, as.numeric)                                        # though, some nations' English lack a confidence rating in Google's API
         ) %>%
         summarise(
           across(transcript, ~paste0(., collapse = "")),
@@ -188,4 +188,9 @@ list(
     )
     
   }, rate = rate_delay(5)))) %>%
-  write_csv(here("lightly_cleaned_and_transcribed.csv"))
+  write_csv(here(
+    "online-task",
+    "analyses",
+    "transcribe",
+    "lightly_cleaned_and_transcribed.csv"
+  ))

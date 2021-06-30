@@ -14,15 +14,8 @@ transcript_dir <- here(analyses_dir, "transcribe")
 
 # Clean speech-to-text data -----------------------------------------------
 
-here(transcript_dir, "transcriptions_merged.csv") %>%
-  read_csv %>%
-  group_by(across(-c(preciseStartTime, preciseEndTime, transcript,              # So that each trial only takes up 1 row
-                     confidence))) %>%                                          # Also some nations' English lack a confidence rating in Google's API
-  summarise(across(transcript, ~paste0(., collapse = "")),
-            across(preciseStartTime, min),
-            across(preciseEndTime, max),
-            across(confidence, mean)) %>%
-  ungroup() %>%
+here(transcript_dir, "lightly_cleaned_and_transcribed.csv") %>%
+  read_csv(col_types = cols(Effort = col_factor(), Focus = col_factor())) %>%
   left_join(read_csv(here(transcript_dir, "corrected_responses.csv")),
             by=c("Sub_Code", "Trial")) %>%
   mutate(
