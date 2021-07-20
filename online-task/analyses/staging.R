@@ -14,7 +14,7 @@ pacman::p_install_gh("stan-dev/cmdstanr")
 analyses_dir <- here("online-task", "analyses")
 staging_dir <- here(analyses_dir, "staging")
 
-cleaned_df <- read_csv(here(analyses_dir, "cleaned.csv"))
+cleaned_df <- read_csv(here(analyses_dir, "cleaned.csv"), guess_max = 1e5)
 
 
 output_list_per_analysis_combo <- function(exact_resp_req, keep_first_block,
@@ -55,15 +55,34 @@ output_list_per_analysis_combo <- function(exact_resp_req, keep_first_block,
     NULL
   } else {
     
-    bayesian_stats()
+    pwalk(
+      list(
+        c(1, 1, 2),
+        c("Blocks", rep("Locations", 2)),
+        c("Block", rep("unique_block", 2)),
+        c(
+          'normal(.335, .25)',                                                  # based off Spinelli et al. 2019 exp 1b (with "contr.treatment)
+          rep('normal(.1, .25)'), 2                                             # based off Bugg et al. 2020 exp 2 inducer set
+        ),
+        c(
+          'normal(0, .1)',                                                      # based off Spinelli et al. 2019 exp 1b (with "contr.treatment)
+          rep('normal(.012, .1)'), 2                                            # based off Bugg et al. 2020 exp 2 inducer set
+        ),
+        c(
+          'normal(-.095, .05)',                                                  # based off Spinelli et al. 2019 exp 1b (with "contr.treatment)
+          rep('normal(-.02, .07)'), 2                                           # based off Bugg et al. 2020 exp 2 inducer set
+        )
+      ),
+      bayesian_stats
+    )
     
-    best_brm_model <- pick_brm_model(-1)
+    # best_brm_model <- pick_brm_model(-1) # probably need to move this inside bayesian_stats.R, since there will no longer be a condition and batch specified, even though pick_brm_model relies on those
     
     posterior_description <- custom_describe_posterior(best_brm_model)
     
     brms::pp_check(best_brm_model)
     
-  }    
+  }
   
   
   # Tabulate Methods Section Information ----------------------------------
@@ -127,7 +146,7 @@ results <- c("exact_resp_req",
         keep_last_three_blocks &
         cautious_regr,
       TRUE,
-      FALSE,
+      FALSE, # how is this if_else working? there are so many else conditionals
       FALSE,
       FALSE,
       "cluster" # either local or cluster

@@ -9,11 +9,6 @@ pacman::p_load_gh("LiKao/VoiceExperiment")
 no_cores <- availableCores() - 1L
 plan(multisession, workers = no_cores)
 
-# May take a few minutes to run the first time you're authenticating
-here("Authentication_File.json") %T>%
-  gl_auth %T>%
-  gcs_auth
-
 raw_dir <- here("online-task", "analyses", "raw_data")
 audio_dir <- here(raw_dir, "audio")
 
@@ -52,8 +47,10 @@ pcpts_with_all_audio_saved <- path(audio_dir, "full") %>%
     "gt3skyFD",                                                                 # error issue reading their voice data
     "ZDRIrjxA",                                                                 # error issue reading their voice data
     "nE0in8wT",                                                                 # error issue reading their voice data
+    "70m2f9pC",                                                                 # error issue reading their voice data
     "sJiC0naK",                                                                 # voice was consistently low, difficult to analyze
     "qiAx7h9D",                                                                 # didn't take the task seriously
+    "RFhUrH7P",                                                                 # didn't follow the instructions
     "OWNpYNOV",                                                                 # poor command of English
     "tOGmbtQk",                                                                 # too many blank responses, and they didn't seem focused
     "ugpDTAuK",                                                                 # TV on in the background
@@ -141,7 +138,7 @@ list(
              to = End_recording, units = "seconds") %T>%
       writeWave(spliced_audio_dir, extensible = FALSE)
     
-    here("Authentication_File.json") %T>%
+    here("Authentication_File.json") %T>%                                       # May take a few minutes to run the first time you're authenticating
       gl_auth %>%
       gcs_auth
     

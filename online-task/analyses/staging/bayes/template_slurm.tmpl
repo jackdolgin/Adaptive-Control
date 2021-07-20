@@ -4,11 +4,12 @@
 #SBATCH --job-name=<%= resources$job_name %> ## Name of the job
 #SBATCH --output=<%= resources$log_file %> ## Output is sent to logfile, stdout + stderr by default
 #SBATCH --error=<%= resources$log_file %>
-#SBATCH --partition=<%= resources$queue %>
-#SBATCH --qos <%= resources$service %> ## QOS
+##SBATCH --partition=<%= resources$queue %>
+##SBATCH --qos=<%= resources$service %> ## QOS
 #SBATCH --cpus-per-task=<%= resources$ncpus %>
 #SBATCH --mem-per-cpu=<%= resources$memory %>
-#SBATCH --time <%= resources$walltime %> ## walltime in hh:mm:ss
+#SBATCH --time=<%= resources$walltime %> ## walltime in hh:mm:ss
+#SBATCH --nodes=<%= resources$nodes %>
 #SBATCH --ntasks=1
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=jdolgin@wustl.edu

@@ -7,13 +7,13 @@ final_wrangling <- function(){
                        Label, Congruency),
                   function(exact_resp_req, Acc, Dominant_Response,
                            transcript, Label, Congruency) {
-                    if_else(!exact_resp_req, Acc, case_when(
+                    if_else(!exact_resp_req, Acc, case_when( # double check that if_else works as it should since it's a weird function
                       transcript == Label & Congruency == "Incongruent" ~ FALSE,
                       transcript == Dominant_Response ~ TRUE,
                       TRUE ~ NA))
                   })
       ),
-      Keep_Block = if_else(
+      Keep_Block = if_else( # double check that if_else works as it should since it's a weird function
         (Block == 1L & keep_first_block) |
           (Block > 1L & keep_last_three_blocks),
         TRUE, FALSE
@@ -22,7 +22,7 @@ final_wrangling <- function(){
     group_by(Sub_Code, Block) %>%
     mutate(across(c(Accuracy, Timely_Response, RT, First_Word_Use),
                   lag, .names = "prev_{.col}")) %>%
-    dplyr::slice(-1L) %>%                                                              # remove the first trial of each block
+    dplyr::slice(-1L) %>%                                                       # remove the first trial of each block
     filter(Keep_Block) %>%
     ungroup()
   

@@ -15,7 +15,7 @@ transcript_dir <- here(analyses_dir, "transcribe")
 # Clean speech-to-text data -----------------------------------------------
 
 here(transcript_dir, "lightly_cleaned_and_transcribed.csv") %>%
-  read_csv(col_types = cols(Effort = col_factor(), Focus = col_factor())) %>%
+  read_csv(guess_max = 1e5) %>%
   left_join(read_csv(here(transcript_dir, "corrected_responses.csv")),
             by=c("Sub_Code", "Trial")) %>%
   mutate(

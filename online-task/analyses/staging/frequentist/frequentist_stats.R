@@ -16,14 +16,20 @@ frequentist_stats <- function(){
       rep(cautious_regr)
     
     if (analysis_type == "difference") {
-      equation <- if_else("Bias" %in% colnames(keys), "~ 1", "~ Bias") %>%
-        paste(dv, ., "+ (1 | Sub_Code)", cautious_rand_effects)
+      options(contrasts = c("contr.treatment","contr.poly"))
+      equation <- if_else("Bias" %in% colnames(keys), "~ 1", "~ Bias") %>%      # should check this again to make sure (1 | Dominant_Response) shouldn't makes its way in here
+        paste(dv, ., cautious_rand_effects)
       
     } else if (analysis_type == "interaction") {
-      equation <- "~ Congruency * Bias * prev_RT + (1 | Sub_Code)" %>%
-        paste(dv, ., "+ (1 | baseline_RT)", cautious_rand_effects)
+      options(contrasts = c("contr.sum","contr.poly"))                          # apparently interactions do better with contr.sum
+      equation <- "~ Congruency * Bias * prev_RT" %>%
+        paste(dv, ., "+ (1 | Dominant_Response)", cautious_rand_effects)
     }
     
+    if (!(condition == "Locations" & cautious_regr & grepl("RT", dv))){         # so that unique_block and Sub_Code aren't redundant random effects if these three parts of the if statement are all true (would only be redundant in such a case); check if i grepl should or shouldn't positively detect RT_diff
+      equation <- paste(equation, "+ (1 | Sub_Code)")
+    }
+
     if (dv == "RT_diff") {
       equation %>%
         lmer(df) %>%
