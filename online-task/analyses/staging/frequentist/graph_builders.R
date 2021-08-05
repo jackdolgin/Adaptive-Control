@@ -139,13 +139,9 @@ split_violin_builder <- function(medium) {
                         outlier.shape = NA,
                         alpha = .3,
                         size = .5) +
-           scale_fill_manual(values = c("#D55E00",
-                                        "#0072B2")) +
-           scale_color_manual(values = c("#D55E00",
-                                         "#0072B2")) +
-           facet_wrap(Task ~ Congruency,
-                      nrow = 1L,
-                      strip.position = "bottom") +
+           scale_fill_manual(values = c("#D55E00", "#0072B2")) +
+           scale_color_manual(values = c("#D55E00", "#0072B2")) +
+           facet_wrap(Task ~ Congruency, nrow = 1L, strip.position = "bottom") +
            theme_minimal() +
            theme(
              legend.spacing = unit(1L, "cm"),

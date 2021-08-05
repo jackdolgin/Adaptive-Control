@@ -1,0 +1,10 @@
+formulae,omit_prev_RT,keeper,fam,filename,Model,ELPD,ELPD_SE,LOOIC,LOOIC_SE,model_num
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency + Bias | Sub_Code)+ (Congruency + Bias | Dominant_Response) + (1 | unique_block),FALSE,TRUE,exgaussian,brm_fit_1.rds,brmsfit,1097.423124,83.98741036,-2194.846247,167.9748207,1
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency + Bias | Sub_Code)+ (Congruency + Bias | Dominant_Response) + (1 | unique_block),FALSE,TRUE,skew_normal,brm_fit_2.rds,brmsfit,772.3346128,83.14409737,-1544.669226,166.2881947,2
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency + Bias | Sub_Code)+ (Congruency + Bias | Dominant_Response) + (1 | unique_block),FALSE,TRUE,shifted_lognormal,brm_fit_3.rds,brmsfit,1282.838254,91.88856757,-2565.676508,183.7771351,3
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency | Sub_Code) + (1 | Dominant_Response)+ (1 | unique_block),FALSE,TRUE,exgaussian,brm_fit_4.rds,brmsfit,1048.885805,85.40070668,-2097.771611,170.8014134,4
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency | Sub_Code) + (1 | Dominant_Response)+ (1 | unique_block),FALSE,TRUE,skew_normal,brm_fit_5.rds,brmsfit,704.5508705,85.89307972,-1409.101741,171.7861594,5
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency | Sub_Code) + (1 | Dominant_Response)+ (1 | unique_block),FALSE,TRUE,shifted_lognormal,brm_fit_6.rds,brmsfit,1252.936638,94.97229061,-2505.873276,189.9445812,6
+RT ~ 0 + Intercept + Congruency * Bias + (1 | Sub_Code)+ (1 | Dominant_Response) + (1 | unique_block),TRUE,TRUE,exgaussian,brm_fit_7.rds,brmsfit,943.5684013,82.80100929,-1887.136803,165.6020186,7
+RT ~ 0 + Intercept + Congruency * Bias + (1 | Sub_Code)+ (1 | Dominant_Response) + (1 | unique_block),TRUE,TRUE,skew_normal,brm_fit_8.rds,brmsfit,627.8994898,83.7828063,-1255.79898,167.5656126,8
+RT ~ 0 + Intercept + Congruency * Bias + (1 | Sub_Code)+ (1 | Dominant_Response) + (1 | unique_block),TRUE,TRUE,shifted_lognormal,brm_fit_9.rds,brmsfit,1096.581023,89.31808711,-2193.162045,178.6361742,9

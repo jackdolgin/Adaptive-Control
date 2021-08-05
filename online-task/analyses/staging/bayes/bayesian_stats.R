@@ -1,12 +1,9 @@
-# add some libraries up here
-# will also need to add the relevant packages
-
-# will need to run bayesian models for only batch 1 in predictive locations, batch 1 in predictive block, and batch 1 and 2 together in predictive locations
-
 bayesian_stats <- function(max_batch, condition, rand_block_component,
                            prior1, prior2, prior3){
   
-  options(contrasts = c("contr.treatment","contr.poly"))                        # makes it easier for me to specify prior distributions for main effects; we don't care about the main effects either, just the interaction term, so don't need to worry about that contr.sum would be more intuitive to the reader
+  key_interaction_param <- "Congruency1.Bias1$"
+  
+  key_interaction_ROPE_range <- c(0, Inf)
   
   df_with_batch_and_cond <- filter(
     finished_df,
@@ -14,27 +11,33 @@ bayesian_stats <- function(max_batch, condition, rand_block_component,
     Batch <= max_batch
   )
   
-  bayes_dir <- here(staging_dir, "bayes")
+  batch_and_cond <- glue("{max_batch}_batches_{condition}")
   
-  compare_bayes_mdls_name <- here(
-    bayes_dir,
-    glue("compare_models_{max_batch}_batches_{condition}.csv")
-  )
+  task_and_batch_dir <- here(bayes_dir, "fits", batch_and_cond)
   
-  power_analyses_csv_name <- here(
-    bayes_dir,
-    glue("power_by_sample_size_{max_batch}_batches_{condition}.csv")
-  )
+  compare_bayes_mdls_name <- here(task_and_batch_dir, "compare_models.csv")
   
-  pick_brm_model <- function(x){
-    read_csv(compare_bayes_mdls_name) %>%
+  posterior_descr_name <- here(task_and_batch_dir, "posterior_description.csv")
+  
+  power_analyses_csv_name <- here(task_and_batch_dir,
+                                  "power_by_sample_size.csv")
+  
+  pick_brm_model <- function(x, format_to_return){
+    
+    best_model_row <- read_csv(compare_bayes_mdls_name) %>%
       filter(omit_prev_RT > x) %>%
-      filter(LOOIC - min(LOOIC) < 2 * LOOIC_SE) %>%
+      filter(LOOIC - min(LOOIC) < looic_se_mult * LOOIC_SE) %>%
       arrange(desc(omit_prev_RT), LOOIC) %>%
-      slice_head() %>%
-      pull(filename) %>%
-      here(bayes_dir, "fits", glue("{max_batch}_batches_{condition}"), .) %>%
-      readRDS
+      slice_head()
+    
+    if (format_to_return == "row"){
+      best_model_row
+    } else{
+      best_model_row %>%
+        pull(filename) %>%
+        here(task_and_batch_dir, .) %>%
+        readRDS
+    }
   }
   
   if (any(c(rerun_find_best_brm, regenerate_bayes_power_analysis))){
@@ -51,9 +54,8 @@ bayesian_stats <- function(max_batch, condition, rand_block_component,
         resources=list(
           job_name = "run_on_cluster",
           log_file = "run_on_cluster.log",
-          queue = "medium",
-          service = "short",
           ncpus = 4L,
+          nodes = 1L,
           memory = '5g',
           walltime = "48:00:00"),
         template = here(bayes_dir, "template_slurm.tmpl")
@@ -70,7 +72,9 @@ bayesian_stats <- function(max_batch, condition, rand_block_component,
         priors,
         sample_prior = sample_prior,
         save_pars = save_pars(all = T),
-        iter = 5000L,
+        chains = total_chains,
+        iter = startup_iters + main_iters,
+        warmup = startup_iters,
         cores = 4L,
         backend = if_else(platform == "local", "rstan", "cmdstanr"),
         silent = 2L,
@@ -82,18 +86,18 @@ bayesian_stats <- function(max_batch, condition, rand_block_component,
       if (is_null(filename)){
         fit_obj
       } else {
-        write_rds(fit_obj, filename, "")
+        write_rds(fit_obj, here(task_and_batch_dir, filename), "xz")
       }
     }
     
-    custom_describe_posterior <- function(amodel){
+    custom_describe_posterior <- function(amodel, parameters_to_keep, r_range){
       amodel %>%
         describe_posterior(
           test = c("p_direction", "rope", "bf"),
           ci = 1,                                                               # as suggested by 10.3389/fpsyg.2019.02767
           rope_ci = 1,                                                          # ditto
-          rope_range=c(-.005, Inf),
-          parameters = "Congruency.*BiasIncongruent$"
+          rope_range=r_range,
+          parameters = parameters_to_keep
         ) %>%
         as_tibble %>%
         mutate(across(
@@ -105,28 +109,35 @@ bayesian_stats <- function(max_batch, condition, rand_block_component,
     
     minimum_priors <- c(
       set_prior('normal(1, .75)', coef = "Intercept"),                          # weak prior because I don't know how timing of online recordings will be
-      set_prior(prior1, coef='CongruencyIncongruent'),
-      set_prior(prior2, coef='BiasIncongruent'),
-      set_prior(prior3, coef='CongruencyIncongruent:BiasIncongruent')
+      set_prior(prior1, coef = "Congruency1"),
+      set_prior(prior2, coef = "Bias1"),
+      set_prior(prior3, coef = "Congruency1:Bias1")
+    )
+    
+    minimium_priors_shifted_logn <- c(
+      set_prior('normal(0, log(1.75))', coef = "Intercept"),
+      set_prior('normal(0, log(1.75))', coef = "Congruency1"),
+      set_prior('normal(0, log(1.75))', coef = "Bias1"),
+      set_prior('normal(0, log(1.75))', coef = "Congruency1:Bias1")
     )
     
     if (rerun_find_best_brm){
       
       prev_RT_priors <- c(
-        set_prior('normal(.02, .03)', coef='prev_RT'),                          # based off Spinelli et al. 2019 exp 1b (with "contr.treatment)
-        set_prior('normal(.01, .02)', coef='CongruencyIncongruent:prev_RT'),    # based off Spinelli et al. 2019 exp 1b (with "contr.treatment)
-        set_prior('normal(0, .02)', coef='BiasIncongruent:prev_RT'),            # based off Spinelli et al. 2019 exp 1b (with "contr.treatment)
-        set_prior(
-          'normal(0, .02)',                                                     # based off Spinelli et al. 2019 exp 1b (with "contr.treatment)
-          coef='CongruencyIncongruent:BiasIncongruent:prev_RT')
+        set_prior('normal(.023, .03)', coef='prev_RT'),                         # based off Spinelli et al. 2019 exp 1b
+        set_prior('normal(0, .02)', coef='Congruency1:prev_RT'),                # based off Spinelli et al. 2019 exp 1b
+        set_prior('normal(0, .02)', coef='Bias1:prev_RT'),                      # based off Spinelli et al. 2019 exp 1b
+        set_prior('normal(0, .02)', coef='Congruency1:Bias1:prev_RT')           # based off Spinelli et al. 2019 exp 1b
+      )
+      
+      prev_RT_priors_shifted_logn <- c(
+        set_prior('normal(0, log(1.5))', coef='prev_RT'),
+        set_prior('normal(0, log(1.5))', coef='Congruency1:prev_RT'),
+        set_prior('normal(0, log(1.5))', coef='Bias1:prev_RT'),
+        set_prior('normal(0, log(1.5))', coef='Congruency1:Bias1:prev_RT')
       )
       
       tibble(
-        prior_col = list(
-          minimum_priors,
-          c(minimum_priors, prev_RT_priors),
-          c(minimum_priors, prev_RT_priors)
-        ),
         formulae = c(
           paste0(
             "RT ~ 0 + Intercept + Congruency * Bias + (1 | Sub_Code)",
@@ -153,22 +164,26 @@ bayesian_stats <- function(max_batch, condition, rand_block_component,
         mutate(omit_prev_RT = !str_detect(formulae, "prev_RT")) %>%
         tidyr::expand(
           nesting(
-            prior_col,
             formulae,
             omit_prev_RT,
             keeper
           ),
-          fam = list(
-            exgaussian(),
-            skew_normal(),
-            shifted_lognormal()
-          )
+          fam = potential_dv_distributions[[2]]
         ) %>%
         filter(keeper) %>%
+        rowwise() %>% 
+        mutate(prior_col = case_when(
+          pluck(fam, "family") == "shifted_lognormal" &
+            str_detect(formulae, "prev_RT") ~
+            list(c(minimium_priors_shifted_logn, prev_RT_priors_shifted_logn)),
+          pluck(fam, "family") == "shifted_lognormal" ~
+            list(minimium_priors_shifted_logn),
+          str_detect(formulae, "prev_RT") ~
+            list(c(minimum_priors, prev_RT_priors)),
+          TRUE ~ list(minimum_priors))) %>%
+        ungroup() %>%
         mutate(
-          filename = glue(
-            "brm_fit_{max_batch}_batches_{condition}_{row_number()}.rds"
-          ),
+          filename = glue("brm_fit_{row_number()}.rds"),
           models = future_pmap(
             .f = brm_with_custom_priors,
             .l = list(
@@ -178,13 +193,9 @@ bayesian_stats <- function(max_batch, condition, rand_block_component,
               prior_col,
               "yes",
               row_number(),
-              here(
-                bayes_dir,
-                "fits",
-                glue("{max_batch}_batches_{condition}"),
-                filename
-              )
-            )
+              filename
+            ),
+            .options = furrr_options(seed = TRUE)
           )) %>%
         walk(function(x){
           if (class(pluck(x, 1)) == "brmsfit"){
@@ -196,31 +207,77 @@ bayesian_stats <- function(max_batch, condition, rand_block_component,
           across(fam, . %>% map_chr( ~{pluck(.x, 1)}))
         ) %>%
         select(-c(Name, prior_col, models)) %>%
+        mutate(model_num = row_number()) %>%
         write_csv(compare_bayes_mdls_name)
+
+      # pick_brm_model(-1) %>%
+      #   custom_describe_posterior(NULL) %>%
+      #   write_csv(posterior_descr_name)
+
+        # check_prior()      
+      best_brm_model <- pick_brm_model(-1, "raw")
       
+      model_param_names <- best_brm_model %>%
+        find_parameters("fixed", "conditional") %>%
+        pluck("conditional") %>%
+        paste0("$")
+      
+      pmap_dfr(
+        list(
+          list(best_brm_model),
+          model_param_names,
+          list(
+            c(-Inf, 0),
+            c(0, Inf),
+            c(0, Inf),
+            c(-Inf, 0),
+            key_interaction_ROPE_range,
+            c(-Inf, 0),
+            "default",
+            "default"
+          )
+        ),
+        custom_describe_posterior
+      ) %>%
+        write_csv(posterior_descr_name)
+      
+      # posterior_description <- custom_describe_posterior(best_brm_model)
+      # brms::pp_check(best_brm_model)
+            
     }
     
-    best_brm_model <- pick_brm_model(-1)
+    inside_the_rope <- read_csv(posterior_descr_name) %>%
+      filter(str_detect(Parameter, regex(key_interaction_param))) %>%
+      pull(ROPE_Percentage) %>%
+      between(.05, .95)
     
-    posterior_description <- custom_describe_posterior(best_brm_model)
-    
-    brms::pp_check(best_brm_model)
-    
-    # can add an if statement here about running the power analysis only if the bayesian model isn't already significant
-    
-    if (regenerate_bayes_power_analysis){ #tbd on the rest of this line & between(best_brm_model$ROPE_Percentage, .05, .95)# transmute(best_brm_model, ! between(ROPE_Percentage, .05, .95))){
+    # run the power analysis only if we've specified we want to regenerate it and if the bayesian model isn't already significant
+    if (regenerate_bayes_power_analysis & inside_the_rope &
+        (max_batch == 2 | condition == "Locations")){
       
-      best_brm_model_no_prev_RT <- pick_brm_model(0)
+      best_brm_model_no_prev_RT <- pick_brm_model(0, "raw")
+      
+      power_priors <-
+        if (best_brm_model_no_prev_RT$family$family == "shifted_lognormal"){
+          minimium_priors_shifted_logn
+        } else{
+          minimum_priors
+        }
+      
       
       300 %>%
-        future_map_dfr(function(sample_size){
+        future_map_dfr(function(samp_size){
           
-          post_draws_simulated <- sample_size %>%
+          options(contrasts = c("contr.sum","contr.poly"))
+          
+          post_draws_simulated <- samp_size %>%
             seq %>%
             map_dfr(~{
               df_with_batch_and_cond %>%
                 count(Congruency, Bias) %>%
-                mutate(across(n, ~round(. * mean_condition_trials / sum(n)))) %>%
+                mutate(across(
+                  n, ~round(. * mean_condition_trials / sum(n)))
+                ) %>%
                 uncount(n) %>%
                 sample_n(n()) %>%
                 mutate(n = blocks_per_pcpt) %>%
@@ -238,7 +295,7 @@ bayesian_stats <- function(max_batch, condition, rand_block_component,
             mutate(across(everything(), as_factor)) %>%
             add_predicted_draws(
               best_brm_model_no_prev_RT,
-              n=40,
+              n=120,
               allow_new_levels=TRUE
             )
           
@@ -253,25 +310,80 @@ bayesian_stats <- function(max_batch, condition, rand_block_component,
                   str_replace(".*(?= ~)", ".prediction"),
                 .x,
                 best_brm_model_no_prev_RT$family,
-                minimum_priors,
+                power_priors,
                 "yes",
                 1L,
                 NULL
               ) %>%
-                custom_describe_posterior()
+                custom_describe_posterior(
+                  key_interaction_param,
+                  key_interaction_ROPE_range
+                )
             }) %>%
             ungroup() %>%
             mutate(
-              beyond_95 = ! between(ROPE_Percentage, .05, .95),
+              beyond_95 = ! between(
+                ROPE_Percentage, rope_power_min_range, rope_power_max_range
+              ),
               beyond_97dot5 = ! between(ROPE_Percentage, .025, .975),
               beyond_99 = ! between(ROPE_Percentage, .01, .99),
-              sample_size
-            )# %>%
-          # summarise(across(where(is.numeric), mean))
-        }) %>%
+              power_sample_size = samp_size
+            )
+        }, .options = furrr_options(seed = TRUE)) %>%
         write_csv(power_analyses_csv_name)
     }
   }
+  
+  read_csv(posterior_descr_name) %>%
+    list() %>%
+    row_append(glue("{batch_and_cond}_df"))
+  
+  walk(c("formulae", "fam", "model_num"), ~{
+    pick_brm_model(-1, "row") %>%
+      pull(glue("{.x}")) %>%
+      row_append(glue("{batch_and_cond}_{.x}"))
+  })
+  
+  if (power_analyses_csv_name %in% dir_ls(task_and_batch_dir)){
+
+    walk(c("formulae", "fam", "model_num"), function(col_name){
+      pick_brm_model(0, "row") %>%
+        pull(glue("{col_name}")) %>%
+        row_append(glue("{batch_and_cond}_{col_name}_simplified"))
+    })
+    
+    read_csv(power_analyses_csv_name) %>%
+      group_by(power_sample_size) %>%
+      summarise(
+        n_simulations = n(),
+        across(where(is_logical), mean)
+      ) %>%
+      mutate(across(everything(), ~walk2(., cur_column(), ~{
+        row_append(.x, glue("{batch_and_cond}_{.y}"))
+      })))
+  }
+  
+
+  # 
+  # key_interaction_stats <- read_csv(posterior_descr_name) %>%
+  #   filter(str_detect(Parameter, regex(key_interaction_param)))
+  # 
+  # walk(c("ROPE_Percentage", "BF"), ~{
+  #   key_interaction_stats %>%
+  #     pull(glue("{.x}")) %>%
+  #     row_append(glue("{.x}_{batch_and_cond}"))
+  # })
+  
+  # try(
+  #     read_csv(power_analyses_csv_name) %>%
+  #       group_by(power_sample_size) %>%
+  #       summarise(across(where(is_logical), mean)) %>%
+  #       mutate(across(everything(), ~walk2(., cur_column(), ~{
+  #         row_append(.x, glue("{batch_and_cond}_{.y}"))
+  #       }))),
+  #   TRUE
+  # )
+  
 }
 
 

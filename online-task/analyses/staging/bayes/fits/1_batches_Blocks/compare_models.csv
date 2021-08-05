@@ -1,0 +1,10 @@
+formulae,omit_prev_RT,keeper,fam,filename,Model,ELPD,ELPD_SE,LOOIC,LOOIC_SE,model_num
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency + Bias | Sub_Code)+ (Congruency + Bias | Dominant_Response) + (1 | Block),FALSE,TRUE,exgaussian,brm_fit_1.rds,brmsfit,835.875667,80.91664672,-1671.751334,161.8332934,1
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency + Bias | Sub_Code)+ (Congruency + Bias | Dominant_Response) + (1 | Block),FALSE,TRUE,skew_normal,brm_fit_2.rds,brmsfit,529.8707484,82.14714968,-1059.741497,164.2942994,2
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency + Bias | Sub_Code)+ (Congruency + Bias | Dominant_Response) + (1 | Block),FALSE,TRUE,shifted_lognormal,brm_fit_3.rds,brmsfit,1058.472634,80.75015251,-2116.945268,161.500305,3
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency | Sub_Code) + (1 | Dominant_Response)+ (1 | Block),FALSE,TRUE,exgaussian,brm_fit_4.rds,brmsfit,784.9100736,80.97535037,-1569.820147,161.9507007,4
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency | Sub_Code) + (1 | Dominant_Response)+ (1 | Block),FALSE,TRUE,skew_normal,brm_fit_5.rds,brmsfit,467.3471017,82.50678286,-934.6942034,165.0135657,5
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency | Sub_Code) + (1 | Dominant_Response)+ (1 | Block),FALSE,TRUE,shifted_lognormal,brm_fit_6.rds,brmsfit,1038.091511,80.17227616,-2076.183021,160.3445523,6
+RT ~ 0 + Intercept + Congruency * Bias + (1 | Sub_Code)+ (1 | Dominant_Response) + (1 | Block),TRUE,TRUE,exgaussian,brm_fit_7.rds,brmsfit,-11103.20511,34.14691835,22206.41021,68.29383671,7
+RT ~ 0 + Intercept + Congruency * Bias + (1 | Sub_Code)+ (1 | Dominant_Response) + (1 | Block),TRUE,TRUE,skew_normal,brm_fit_8.rds,brmsfit,336.278229,80.6509187,-672.556458,161.3018374,8
+RT ~ 0 + Intercept + Congruency * Bias + (1 | Sub_Code)+ (1 | Dominant_Response) + (1 | Block),TRUE,TRUE,shifted_lognormal,brm_fit_9.rds,brmsfit,813.6041701,77.99645091,-1627.20834,155.9929018,9

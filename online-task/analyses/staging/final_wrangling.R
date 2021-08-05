@@ -1,5 +1,5 @@
 final_wrangling <- function(){
-  semi_trimmed_df <- cleaned_df %>%
+  semi_trimmed_df <<- cleaned_df %>%
     mutate(
       across(
         Accuracy,
@@ -20,20 +20,20 @@ final_wrangling <- function(){
       )
     ) %>%
     group_by(Sub_Code, Block) %>%
-    mutate(across(c(Accuracy, Timely_Response, RT, First_Word_Use),
+    mutate(across(c(Accuracy, Timely_Response, Slow_Enough, RT, First_Word_Use),
                   lag, .names = "prev_{.col}")) %>%
     dplyr::slice(-1L) %>%                                                       # remove the first trial of each block
     filter(Keep_Block) %>%
     ungroup()
   
-  cleaned_and_filtered_df <- filter(
+  cleaned_and_filtered_df <<- filter(
     semi_trimmed_df,
     Accuracy,
     prev_Accuracy,
     First_Word_Use,
     prev_First_Word_Use,
-    RT >= .3,                                                                   # if onset detection thinks audio was any quicker than this, it must be off or wrong; also removes trials where no RT was detected
-    prev_RT >= .3,
+    Slow_Enough,
+    prev_Slow_Enough,
     Timely_Response,
     prev_Timely_Response
   )
@@ -63,7 +63,7 @@ final_wrangling <- function(){
     summarise(baseline_RT = mean(RT), .groups = "drop") %>%
     ungroup()
   
-  finished_df <- cleaned_and_filtered_df %>%
+  finished_df <<- cleaned_and_filtered_df %>%
     filter(str_detect(Task, "Predictive")) %>%
     left_join(neutral_timings) %>%
     mutate(
@@ -71,7 +71,7 @@ final_wrangling <- function(){
       Bias = coalesce(Block_Bias, Task_Side_Bias)
     ) %>%
     group_by(Task) %>%
-    mutate(across(prev_RT, scale)) %>%
+    mutate(across(prev_RT, standardize)) %>%
     ungroup() %>%
     mutate(
       unique_block = paste(Sub_Code, Block, sep = "_"),

@@ -1,16 +1,28 @@
 methods_info <- function(){
+  
   possible_tot_trials <- semi_trimmed_df %>%
     tidyr::expand(Sub_Code, Trial) %>%
     nrow %T>%
     row_append("possible_tot_trials")
   
   
-  # Total non- full screen trials
+  # Percent of non- full screen trials
   
   possible_tot_trials %>%
     subtract(nrow(semi_trimmed_df)) %>%
-    divide_by(2L) %>%
-    row_append("non_full_screen")
+    divide_by(possible_tot_trials) %>%
+    percent(.1) %>%
+    row_append("perc_non_full_screen")
+  
+  
+  # Percent of manually corrected trials
+  
+  here(analyses_dir, "transcribe", "corrected_responses.csv") %>%
+    read_csv %>%
+    nrow %>%
+    divide_by(possible_tot_trials) %>%
+    percent(.1) %>%
+    row_append("perc_manually_corrected")
   
   
   # Response Accuracies
@@ -25,11 +37,21 @@ methods_info <- function(){
     row_append("perc_wrong")
   
   semi_trimmed_df %>%
-    filter(is.na(Accuracy)) %>%
+    filter(is.na(transcript)) %>%
     nrow %>%
     divide_by(nrow(semi_trimmed_df)) %>%
     percent(.1) %>%
-    row_append("perc_NAcc")
+    row_append("perc_blank")
+  
+  semi_trimmed_df %>%
+    filter(
+      is.na(Accuracy),
+      !is.na(transcript)
+    ) %>%
+    nrow %>%
+    divide_by(nrow(semi_trimmed_df)) %>%
+    percent(.1) %>%
+    row_append("perc_nonsensical")
   
   correct_trials <- filter(semi_trimmed_df, Accuracy)
   
@@ -38,6 +60,7 @@ methods_info <- function(){
     divide_by(n_incorrect_trials + nrow(correct_trials)) %>%
     percent(.1) %>%
     row_append("perc_correct")
+  
   
   # Using the same word a second time
   
@@ -54,17 +77,11 @@ methods_info <- function(){
   # Early trials
   
   first_word_trials %>%
-    filter(RT < .3) %>%
+    filter(!Slow_Enough) %>%
     nrow %>%
     divide_by(nrow(first_word_trials)) %>%
     percent(.01) %>%
-    row_append("perc_too_quick")
-  
-  first_word_trials %>%
-    filter(RT < .3) %>%
-    nrow %>%
-    format_number %>%
-    row_append("total_too_quick")
+    row_append("perc_too_fast")
   
   
   # Slow trials
@@ -94,6 +111,7 @@ methods_info <- function(){
     divide_by(possible_tot_trials) %>%
     percent(.1) %>%
     row_append("perc_preserved")
+  
   
   # Total trials preserved
   

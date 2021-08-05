@@ -1,0 +1,10 @@
+formulae,omit_prev_RT,keeper,fam,filename,Model,ELPD,ELPD_SE,LOOIC,LOOIC_SE,model_num
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency + Bias | Sub_Code)+ (Congruency + Bias | Dominant_Response) + (1 | unique_block),FALSE,TRUE,exgaussian,brm_fit_1.rds,brmsfit,1812.344847,116.1984362,-3624.689695,232.3968723,1
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency + Bias | Sub_Code)+ (Congruency + Bias | Dominant_Response) + (1 | unique_block),FALSE,TRUE,skew_normal,brm_fit_2.rds,brmsfit,1178.671066,117.0600954,-2357.342133,234.1201909,2
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency + Bias | Sub_Code)+ (Congruency + Bias | Dominant_Response) + (1 | unique_block),FALSE,TRUE,shifted_lognormal,brm_fit_3.rds,brmsfit,2163.180107,126.2969072,-4326.360215,252.5938144,3
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency | Sub_Code) + (1 | Dominant_Response)+ (1 | unique_block),FALSE,TRUE,exgaussian,brm_fit_4.rds,brmsfit,1706.434546,116.6484522,-3412.869092,233.2969044,4
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency | Sub_Code) + (1 | Dominant_Response)+ (1 | unique_block),FALSE,TRUE,skew_normal,brm_fit_5.rds,brmsfit,1064.546054,118.4538736,-2129.092109,236.9077472,5
+RT ~ 0 + Intercept + Congruency * Bias * prev_RT+ (Congruency | Sub_Code) + (1 | Dominant_Response)+ (1 | unique_block),FALSE,TRUE,shifted_lognormal,brm_fit_6.rds,brmsfit,2107.641066,128.3520733,-4215.282133,256.7041466,6
+RT ~ 0 + Intercept + Congruency * Bias + (1 | Sub_Code)+ (1 | Dominant_Response) + (1 | unique_block),TRUE,TRUE,exgaussian,brm_fit_7.rds,brmsfit,1492.31498,114.1185874,-2984.629959,228.2371748,7
+RT ~ 0 + Intercept + Congruency * Bias + (1 | Sub_Code)+ (1 | Dominant_Response) + (1 | unique_block),TRUE,TRUE,skew_normal,brm_fit_8.rds,brmsfit,893.5697727,115.6539462,-1787.139545,231.3078925,8
+RT ~ 0 + Intercept + Congruency * Bias + (1 | Sub_Code)+ (1 | Dominant_Response) + (1 | unique_block),TRUE,TRUE,shifted_lognormal,brm_fit_9.rds,brmsfit,1771.540779,122.0409871,-3543.081558,244.0819742,9

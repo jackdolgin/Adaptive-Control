@@ -9,43 +9,24 @@ frequentist_stats <- function(){
     
     condition <- str_extract(first(keys), "(?<=_).*")
     
-    cautious_rand_effects <- case_when(
-      condition == "Blocks" ~ "+ (1 | Block)",
-      condition == "Locations" ~ "+ (1 | unique_block)"
+    
+    equation <- list(
+      dv,
+      "~",
+      case_when(
+        analysis_type == "interaction" ~ "Congruency * Bias * prev_RT",
+        "Bias" %in% colnames(keys) ~ "1",
+        TRUE ~ "Bias"
+      ),
+      case_when(
+        condition == "Blocks" ~ "+ (1 | Block)",
+        condition == "Locations" ~ "+ (1 | unique_block)"
+      ) %>%
+        rep(cautious_regr),
+      rep("+ (1 | Dominant_Response)", dv == "RT"),
+      rep("+ (1 | Sub_Code)", !(condition == "Locations" & cautious_regr))      # so that unique_block and Sub_Code aren't redundant random effects if these three parts of the if statement are all true (would only be redundant in such a case)
     ) %>%
-      rep(cautious_regr)
-    
-    # if (analysis_type == "difference") {
-    #   options(contrasts = c("contr.treatment","contr.poly"))
-    #   equation <- if_else("Bias" %in% colnames(keys), "~ 1", "~ Bias") %>%
-    #     paste(dv, ., cautious_rand_effects)
-    #   
-    # } else if (analysis_type == "interaction") {
-    #   options(contrasts = c("contr.sum","contr.poly"))                          # apparently interactions do better with contr.sum
-    #   equation <- "~ Congruency * Bias * prev_RT" %>%
-    #     paste(dv, ., "+ (1 | Dominant_Response)", cautious_rand_effects)
-    # }
-    
-    if (analysis_type == "difference") {
-
-      main_effects <- if_else("Bias" %in% colnames(keys), "1", "Bias")
-      
-    } else if (analysis_type == "interaction") {
-
-      main_effects <- "Congruency * Bias * prev_RT"
-    }
-    
-    equation <- paste(
-      dv, "~", main_effects, cautious_rand_effects, if_else(
-        dv == "RT", "+ (1 | Dominant_Response)", ""
-      )
-    )
-    
-    
-    
-    if (!(condition == "Locations" & cautious_regr)){                           # so that unique_block and Sub_Code aren't redundant random effects if these three parts of the if statement are all true (would only be redundant in such a case)
-      equation <- paste(equation, "+ (1 | Sub_Code)")
-    }
+      reduce(paste)
     
     if (dv == "RT_diff") {
       equation %>%
@@ -55,7 +36,10 @@ frequentist_stats <- function(){
       
       
       glmer_func <- function(eq){
-        glmer(eq, df, Gamma(link="identity"), glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+        glmer(
+          eq, df, Gamma(link="identity"),
+          glmerControl(optimizer=glmer_optimzer, optCtrl=list(maxfun=2e5))
+        )
       }
 
       fitted <- tryCatch(
@@ -66,7 +50,7 @@ frequentist_stats <- function(){
               str_remove(" \\* prev_RT") %>%
               glmer_func,
             warning = function(w) equation %>%
-              str_remove("\\(1 \\| Dominant_Response\\)") %>%
+              str_remove(" \\+ \\(1 \\| Dominant_Response\\)") %>%
               glmer_func
           )
         }

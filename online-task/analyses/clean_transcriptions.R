@@ -24,7 +24,8 @@ here(transcript_dir, "lightly_cleaned_and_transcribed.csv") %>%
     across(c(Dominant_Response, Label, Synonyms, transcript),
            ~str_remove_all(., " ") %>% tolower),
     Timely_Response = if_else(Stim_Onset + preciseStartTime <= Stim_Offset,
-                              TRUE, FALSE)
+                              TRUE, FALSE),
+    Slow_Enough = if_else(preciseStartTime >= .3, TRUE, FALSE)                  # if onset detection thinks audio was any quicker than this, it must be off or wrong; also removes trials where no RT was detected
   ) %>%
   mutate(Accuracy = future_pmap_lgl(., function(
     Synonyms, transcript, Label, Congruency, ...){
