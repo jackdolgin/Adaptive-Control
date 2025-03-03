@@ -1,0 +1,254 @@
+---
+title             : "Selective Attention Adapts to Blockwise but Not Location-Based Proportion-Congruence with Trial-Unique Stimuli"
+shorttitle        : "Attention Adapts to Blocks, but Not Locations"
+
+author: 
+  - name          : "Jack Dolgin"
+    affiliation   : "1"
+    corresponding : yes
+    address       : "Somers Family Hall 1125, 1 Brookings Drive, St. Louis, MO 63105"
+    email         : "jdolgin@wustl.edu"
+  - name          : "Tobias Egner"
+    affiliation   : "2"
+
+affiliation:
+  - id            : "1"
+    institution   : "Washington University in St. Louis"
+  - id            : "2"
+    institution   : "Duke University"
+
+bibliography      : ["article_refs.bib", "r_package_refs.bib"]
+
+figsintext        : yes
+figurelist        : no
+tablelist         : no
+footnotelist      : no
+lineno            : no
+mask              : no
+
+#class             : doc
+#lang              : 'en-US'
+
+
+class             : "man"
+# output:
+#  bookdown::html_document2:
+#     toc: true
+#     toc_float: true
+#     collapsed: false
+#     number_sections: false
+#     toc_depth: 2
+#     code_folding: hide
+#     css: webpaper.css
+
+indent: TRUE
+#output: 
+#  word_document
+
+mainfont: Times New Roman
+output:
+  #papaja::apa6_word: default
+  papaja::apa6_pdf: default
+  #redoc::rdocx_reversible
+ 
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding,
+  output_format = "all") })
+  
+header-includes:
+  - \usepackage{threeparttable}
+  - \usepackage{setspace}\singlespacing 
+  - \usepackage{dcolumn}
+  - \usepackage{upgreek}
+  # - \newenvironment{zeroindent}
+  #    {\par\setlength{\parindent}{5pt}}
+  #    {\par}  
+  - \setlength{\parskip}{0pt}
+  - \raggedbottom
+---
+
+```{r setup, include=FALSE, code=xfun::read_utf8(here::here("online-task", "analyses", "staging.R"))}
+# Install  these packages if they aren't installed already
+# devtools::install_github("crsh/papaja")
+# install.packages("knitr", "scales", "xtable")
+```
+
+# Introduction
+
+Cognitive control denotes our ability to use temporary internal goals to drive how we allocate attention and respond to stimuli, allowing us to override habitual responses when they are contextually inappropriate (e.g., @Miller_2001; @Egner_2017). Over the past couple of decades, a large research literature has investigated how cognitive control is regulated in response to changing demands, for instance, variations in task difficulty over time (@Botvinick_2001; reviewed in @Chiu_2019). A central debate accompanying these efforts has focused on possible confounds in interpreting putative effects of adaptive control, which can often be alternatively ascribed to low-level stimulus-response learning effects due to recurring stimuli (e.g., @Schmidt_2013; @Braem_2019). One particularly clean manner of isolating effects of cognitive control adjustments from such learning effects would be to devise tasks that avoid the use of repeating stimuli altogether. A recent study introduced a promising approach for this, using a picture-word interference task with trial-unique target and distracter stimuli, and reported reliable adjustments in control to time-varying demands (@Spinelli_2019). The present study aimed to optimize this approach while at the same time testing whether confound-free effects of control adjustments could also be observed when changes in demand are tied to spatial (rather than temporal) context.
+
+Putative strategic adjustments in cognitive control are commonly studied in variants of the color-naming Stroop task, which requires participants to name the ink color of color-words while trying to ignore the words’ meaning (@Stroop_1935; @MacLeod_1991). The efficacy of control is measured by comparing response times and accuracy between trials where the color and word-meaning match (congruent trials, e.g., the word GREEN printed in green ink) and trials where they mismatch (incongruent trials, e.g., the word GREEN printed in blue ink). The size of this performance differential (the congruency effect) is taken as an inverse measure of how well the instructed goal of color-naming was imposed over the more practiced response of word-reading. Importantly, this metric of control over conflict from distracters is highly context-sensitive: when the rate of congruent trials in a given context is low, the congruency effect tends to be smaller than in contexts where the rate of congruent trials is high. “Proportion congruent effects” of this type have been documented when manipulated over blocks of trials (the listwide proportion congruent or LWPC effect) (e.g., @Logan_1979; reviewed in @Bugg_2012), as a function of spatial context (the context-specific proportion congruent or CSPC effect) (e.g., @Crump_2006; @King_2012; @H_bner_2016), as well as at the level of specific stimuli or stimulus features (the item-specific proportion congruent effect, or ISPC) (e.g., @Jacoby_2003; @Bugg_2011). The present study is concerned with the LWPC and CSPC phenomena.
+
+The control-based interpretation of the LWPC and CSPC effects is that they reflect adjustments in attentional focus in response to the context-specific statistics of control demand (i.e., the frequency of congruent vs. incongruent trials). For instance, the influential conflict-monitoring model accounts for these data patterns by suggesting that when participants encounter conflict (on incongruent trials), they up-regulate their attentional focus on the current task goal, such that a block of trials or location where many trials are incongruent will lead to a heightened level of attention, which in turn reduces the influence of distracters on performance (@Botvinick_2001). However, when employing tasks with relatively small stimulus sets, like the Stroop task, these performance patterns can also arise from lower-level stimulus-response contingency learning. For instance, a block of trials with a high rate of incongruent trials would also entail a larger number of specific incongruent color/word combinations (e.g., RED in blue), and it is plausible that participants may learn that the word RED predicts the response “blue”; the reverse is true for blocks with a high rate of congruent trials, and the learning of these contingencies can therefore mimic the LWPC effect (e.g., @Schmidt_2013; @Schmidt_2018_1). An equivalent argument can be made for some types of CSPC protocols (@Schmidt_2018).
+
+Several design strategies have been put forward to disentangle the effects of differential stimulus frequencies from those of varying control demands, including the popular separation of recurring stimuli into sets of “inducer” and “diagnostic” stimuli (reviewed in @Braem_2019). Here, the inducer stimuli are frequency-biased to induce varying control demands but they are also subject to possible stimulus-response and stimulus-control demand contingency learning effects; the “diagnostic” stimuli are not frequency-biased and should thus reflect effects of control due to the context created by the inducer stimuli (@Braem_2019). However, the cleanest manner of controlling for stimulus-based learning effect is arguably to preempt them altogether, by devising tasks that avoid any type of stimulus feature recurrence via the use of trial-unique stimuli. In addition to preempting stimulus-response associations, this type of design also avoids item-based control associations, which can confound CSPC effects in particular (@Bugg_2020; @Bugg_2021). While this approach would be impossible in the color-naming Stroop task due to a very limited number of nameable colors, the picture-word interference task opens up the possibility of creating hundreds of unique stimuli in a Stroop-like conflict task (e.g., @Lupker_1979; @Starreveld_2016). Availing themselves of this option, Spinelli et al.’s (2019, Experiment 1B) asked participants to name line drawings of common objects while ignoring overlaid distracter words that could either match (congruent trials) or mismatch (incongruent trials) the underlying picture (e.g., a picture of a dog overlaid with the word DOG or the word BED). The proportion of congruent trials (25% vs. 75%) was manipulated between groups, and it was found that mean congruency effects in the group with a small proportion of congruent trials were significantly smaller than those in the group with a high proportion of congruent trials, a between-subjects LWPC effect.
+
+While this proof-of-principle demonstration of the LWPC effect in the absence of any target or distracter feature repetitions is highly important, a couple of aspects of the @Spinelli_2019 design could be argued to be suboptimal, and one goal of the current study was to redress this. First, the LWPC effect is commonly investigated as a within-participant phenomenon, as it is meant to operationalize the situation of an individual adapting to changes in task difficulty over time. In order to address this weakness, in the current study we employed within-subjects manipulations of the proportion of congruent trials. Second, baseline naming times are likely to differ substantially between different object drawings, which raises the possibility that differences in response times between mostly-congruent and mostly-incongruent contexts could be inadvertently contributed to by whichever objects happen to be assigned each context and/or congruency. This source of variance was not controlled for in Spinelli et al. (2019, Experiment 1). To resolve this concern, in the present study we included a baseline control condition, where all the pictures were named in the presence of overlaid non-word letter strings (rather than congruent or incongruent words), and we included these baseline naming latencies in the analysis model of the congruency tasks, and this also allowed us to tease apart facilitation and interference effects.
+
+Finally, in addition to a more optimized assessment of the LWPC effect without stimulus-based learning confounds, the current study also used the trial-unique picture-word interference task to probe whether the location-based CSPC effect can be obtained under these controlled conditions. The robustness of this effect has been subject to considerable debate. In particular, the effect has been obtained in scenarios where inducer stimuli were presented as congruent or incongruent 100% of the time (@Crump_2009; @Crump_2017), but not when these stimuli were biased at a less extreme rate (@Bugg_2020; @Bugg_2021; @Hutcheon_2017; but see @Crump_2009). It has been persuasively argued that one key reason for this is that in these designs item-based associations with control demand may overshadow location-based associations (@Bugg_2020; @Bugg_2021). Moreover, other authors have produced evidence that the CSPC effect may reflect the learning of compound cue-stimulus associations rather than representing context-specific control adjustments (@Schmidt_2018). Both of these concerns can be overcome by the use of trial-unique stimuli, which preempt the forming of any stimulus-based learning effects, such that the pure effect of the location context on control processes should be revealed. Accordingly, the current study also set out to provide this test of a purely location-based CSPC effect.
+
+# Methods
+
+## Participants
+
+Ninety-nine participants were recruited via Amazon Mechanical Turk (AMT) to participate for \$4.25 in the approximately 30-minute study. All participants resided in the United States, had an AMT success rating better than 95%, and provided written consent. Nine participants were excluded due to either technical difficulties in the post-processing of voice recordings (4), TV noise or background chatter suggesting participants were distracted (2), responding to fewer than 80% of trials (1), engaging in singing (poorly) and complaining during the experiment (1), or being not fluent in English (1). The remaining 90 participants were randomly assigned to one of three task conditions, the control task, the LWPC task, or the CSPC task (N = 30 per group).
+
+An additional 36 participants were run in the CSPC task after Bayesian analyses neither supported nor rejected the CSPC effect in the initial sample (`r effect_stats("Locations", "interaction", "Congruency__x__Bias", 1)`; see the Analysis section). These 36 participants, who had not previously participated in any of the three tasks, completed the identical CSPC task that the original cohort had completed, supplemented with two post-task questions asking whether they dedicated full effort and focus. We excluded six of the 36 participants in this second batch for either reporting not having put in full effort and focus throughout the task (3), not following task instructions (1), technical difficulties in the post-processing of their voice recordings (1), or TV noise in the background (1). Thus, data were analyzed for 60 participants total in the CSPC task and 30 participants in each of the other two conditions. The CSPC sample size of 60 matches the number @Bugg_2020 included in their second experiment and substantially exceeded the 32 that @Crump_2017 and @Hutcheon_2017 recommended for detecting a CSPC effect. The 120 participants across the three conditions (*M*~age~ = `r age_mean`, SD = `r age_sd`; `r total_males` male) were collected under the protocol approved by the Duke University Institutional Review Board.
+
+## Stimuli
+
+Each trial featured a trial-unique, easily nameable black-and-white line drawing of an object, ranging from humans (e.g., a firefighter) to animals to geological features (e.g., a mountain) to mechanical tools and more. The pictures were used with permission from the International Picture-Naming Project database [@Szekely_2004], though we only selected the `r num_drawings_used` of its `r num_possible_drawings` drawings that we thought would be easiest for participants to identify. The full list of items used is available in the open materials ([osf.io/z3tx7](https://osf.io/z3tx7)). As the original line drawings vary in size, they were rendered more uniform by setting the longer dimension (width or height) to `r max_pic_height` pixels and setting the height, if it was the shorter of the two dimensions, at a minimum of `r min_pic_height` pixels.
+
+On every trial, lowercase Helvetica 72-pixel letters appeared in front of the drawings translucently, so as to make both the letters and underlying image visible (see Figure 1). In two of the three conditions (the LWPC and CSPC groups), these letters formed words, which were derived from the bank of `r num_drawings_used` drawing identities. In the third, control condition, the overlaid letters were randomly scrambled consonant strings, excluding 'l' and 'y'. The length of the letter strings across control condition trials matched the distribution of word lengths in the other two conditions.
+
+## Experimental procedures
+
+Participants connected to the study via the Google Chrome browser and used a built-in or external computer microphone. We verified adequate audio quality at the start of the task by requiring them to say three words ("colleague," "mischievous," and "zaniest") and within seven attempts successfully trigger detection by the real-time speech-to-text JavaScript library annyang [@js-annyang].
+
+In all three task conditions, participants completed `r num_practice_per_participant` practice trials followed by four experimental blocks of `r num_trials_per_block` trials each. Each trial began with a fixation cross (1000 ms), followed by a blank screen (500 ms), after which a drawing and a word (LWPC and CSPC conditions) or non-word letter string (control condition) appeared. The task stimuli remained on screen for 2750 ms regardless of when or whether participants responded, and were followed by another 500 ms blank screen prior to the onset of the next trial. Participants were instructed to say aloud the name of the drawing's identity, while ignoring the word or letters that overlaid it. We did not provide trial-by-trial feedback to responses because of the unreliability of real-time speech processing software.
+
+Each drawing appeared only once in the entire task, and the same was true for the distracter words in the LWPC and CSPC conditions. Half of the words matched the identity of the underlying drawing (congruent distracters), and the other half were labels for objects that never appeared in the experiment (incongruent distracters). This design, with `r num_main_trials_per_participant` experimental and `r num_practice_per_participant` practice drawings appearing along with an additional `r non_matching_words` non-matching words, ensured that both the object drawings and words were trial unique. Note that stimuli and their trial order, their overlaid text, and their trial's other task features were randomized between participants.
+
+In the LWPC and the control condition, the words or letters and the drawings always appeared in the center of the screen. In the LWPC condition, while the overall proportion of congruent-to-incongruent trials was 50/50, trials were presented in blocks of mostly congruent trials (75% congruent) and mostly incongruent trials (75% incongruent) that alternated, either C-I-C-I or I-C-I-C, randomized across participants. In the CSPC condition, like in the LWPC condition, the overall proportion of congruent-to-incongruent trials was 50/50. Unlike in the LWPC condition, instead of being split disproportionately by block, an equal number of congruent and incongruent trials appeared each block but most congruent trials were displayed 40 pixels to the left side of the center of the screen and congruent trials 40 pixels to the right side, or vice versa (randomized across participants). These congruency-location associations remained constant throughout the experiment. The LWPC and CSPC conditions thus lent themselves to assessing whether cognitive control would be adapted in response to changing control demands defined by a temporal (LWPC) or spatial (CSPC) context, in the absence of any feature repetition, frequency, or contingency-learning confounds. Finally, in the letter string control condition, there were no congruent or incongruent trials, as all drawings were overlaid with random strings of consonants. Performance on trials in this condition served as a comparison condition with the congruent and incongruent trials to account for baseline differences in naming speeds for the different objects (with superimposed letters) [@Fraisse_1968]. It also allowed us to disentangle facilitation from interference effects in the picture-word interference task. Note that participants were not informed of the statistical patterns related to block or location and trial congruency in any of the conditions.
+
+```{r figure1, echo=FALSE, fig.width=3,fig.height=4.51, fig.cap='(ref:figure1)', out.width = "\\textwidth", fig.pos = "!h"}
+#, out.width="\\textwidth", fig.env="figure*"
+knitr::include_graphics(here::here("manuscript", "figure_1.svg"))
+```
+
+(ref:figure1) Examples of the congruency and location proportions in a sample block, by condition. After a 1000 ms fixation cross and a 500 ms blank screen, a drawing and either a word (LWPC and CSPC conditions) or a random string of consonants (control condition) appeared. In the LWPC and the control condition, the drawing and words or letter strings always appeared in the center of the screen; in the CSPC condition they always appeared to the left or right of fixation. Note that in this example, the proportion of congruent trials in the LWPC condition block is 75%, whereas in the CSPC condition that proportion is 50%. However, in the CSPC condition the proportion congruency corresponded with the side of stimulus presentation, such that one side (in this example, the right side) was typically congruent (75% of the time) and the other side (in this example, the left side) typically incongruent.
+
+## Analysis
+
+### Preprocessing
+
+Analyses were conducted in R [@R-base] using a variety of packages, including the R Tidyverse [@tidyverse2019] for data wrangling and graphing, tuneR for audio processing [@tuneR2018], bayestestR [@R-bayestestR], CmdStanR [@R-cmdstanr], and tidybayes [@R-tidybayes] for Bayesian analyses, and papaja [@R-papaja] for manuscript development. As expected, object naming accuracy was near ceiling in all conditions (mean accuracy = `r results_with_preferred_params$perc_correct`), and therefore response time (RT) was our only dependent variable. All the paper's results and deployed equations can be viewed in our open materials ([osf.io/z3tx7](https://osf.io/z3tx7)), notably the RMarkdown [@R-rmarkdown] document that generates the manuscript and results in-line.
+
+Due to the high number of trials across participants (120 participants * `r num_main_trials_per_participant` trials = `r scales::comma(120 * num_main_trials_per_participant)`), we leveraged the Google Cloud Speech API automatic speech transcriber in R [@R-googleCloudStorageR; @R-googleLanguageR] as a first pass for processing participants' verbal responses. @Ziman_2018 previously validated this tool as a reliable transcriber of vocal responses from AMT psychological experiments. To guide the transcriber, it was fed a list of candidate words, which included the (most common) name of the image, of the overlaid label if it was an incongruent trial, and synonyms for the name of the image, since as @Szekely_2003 showed these drawings can have numerous interpretations. Including these candidates increased their likelihood of being returned, but not enough to prohibit an unanticipated word from ever being transcribed.
+
+After this first pass, we listened to the audio of, and manually transcribed, any trial whose automatic transcription did not match any of the candidate words. We corrected any unanticipated transcription that in fact was a correct response (`r nrow(readr::read_csv(here::here(analyses_dir, "transcribe", "corrected_responses.csv")))` trials), removed uninterpretable or seemingly nonsensical responses, and credited all unanticipated responses that were reasonable drawing interpretations (e.g., calling a dolphin a shark). We credited these responses liberally due to the fast pace of the task and the fact that the objects were partially occluded by the overlaid words or letter strings.`r if (results_hold_up_diff_analysis_choices) " Notably, analyzing only trials with the single most expected word response made no difference in any of the statistical tests."` A list of the words credited as correct for each drawing is included in the data repository.
+
+The first trial of each block was discarded from further analyses. We then removed any trial with at least one of the following features: it did not occur in full browser screen (`r results_with_preferred_params$perc_non_full_screen` of trials); participants gave a blank (`r results_with_preferred_params$perc_blank`) or nonsensical response (`r results_with_preferred_params$perc_nonsensical`); they had answered with the same response on a previous trial or that response had previously been a word label (`r results_with_preferred_params$perc_word_repeat`); the VoiceExperiment package [@R-VoiceExperiment] failed to detect a voice onset (`r results_with_preferred_params$perc_no_RT`); a response occurred within 300 ms of stimulus onset (`r results_with_preferred_params$perc_too_fast`) or after stimulus offset (`r results_with_preferred_params$perc_too_slow`); or any additional trial preceded by any one of these pruned trials. This trimming procedure left `r scales::comma(results_with_preferred_params$total_preserved)` trials for the RT analysis (`r results_with_preferred_params$perc_preserved` of the `r scales::comma(results_with_preferred_params$possible_tot_trials)` trials).
+
+To process RTs, we used the "onsets" function from the R package VoiceExperiment [@R-VoiceExperiment]. This function was built specifically for determining vocal RTs in psychological experiments, and it produced highly similar RTs to our manual evaluation of a sampling of responses, even for responses with filler words or sounds.
+
+### Statistical Models
+
+We analyzed LWPC and CSPC effects using both a frequentist model and a set of competing Bayesian models. Most elements of the models were identical, and they produced equivalent results. The models regressed RT onto trial congruency and context congruency, and treated participants and specific drawings as random effects.
+
+Note that because of the nature of the data collection, all RTs in this study were subject to a global delay of a few-hundred ms due to lag in the Internet's capture of user audio. This inflates raw RTs with some non-systematic lag that is constant within each block of trials, but can differ between blocks. To account for this, in the CSPC condition, whose congruency proportions were constant between blocks, we re-ran the frequentist generalized linear mixed model post-hoc with block as a nested random intercept`r if (results_hold_up_diff_analysis_choices) "; doing so did not change the results"`. The LWPC condition involves a between-block design, and we thus could not control for average block RT; however, given the random nature of the lag, its effect was expected to average out over conditions and participants. This was corroborated by the fact that we observed the expected LWPC effect (see the Results section). `r if (results_hold_up_diff_analysis_choices) " We also included block number as a crossed random intercept, and this addition did not change our results."`
+
+We employed an lme4 [@lme42015] frequentist model that used a `r stringr::str_to_upper(glmer_optimzer)` optimizer to avoid convergence warnings, and assumed the RTs fit a gamma distribution, which has been shown to better capture a raw RT distribution than a normal distribution [@Lo_2015]. For the brms [@brms2017; @brms2018; @R-brms] Bayesian analyses, we tested three RT distributions (`r potential_dv_distributions[[1]][1]`, `r potential_dv_distributions[[1]][2]`, and `r potential_dv_distributions[[1]][3]`) and three model formulas for a total of nine model fits per task (see Supplementary Table 1 for the competing models). Each model's priors reflected effect sizes reported in @Spinelli_2019 regarding the LWPC effect and in @Bugg_2020 regarding the CSPC effect. We ran `r scales::comma(startup_iters * total_chains)` warm-up iterations and generated `r scales::comma(main_iters * total_chains)` posterior samples per parameter per model across `r insight::format_number(total_chains)` MCMC chains. Of the nine fits, this paper reports statistics from the one with the lowest leave-one-out information criterion (LOOIC) in `r if (best_bayes_model_same_across_batch_and_task) "both tasks"`, model `r common_bayes_model_num` in Supplementary Table 1. That model assumes a `r common_bayes_model_distr` RT distribution and reads as follows in R syntax:
+
+`r best_bayes_equation`
+
+We corroborated that this Bayesian model converged via visual inspection of trace plots (see Supplementary Figures 1 and 2) and because $\widehat{R}$ values ranged between `r insight::format_value(min(posterior_df_combined$Rhat), 3)` and `r insight::format_value(max(posterior_df_combined$Rhat), 3)`, below the recognized 1.1 threshold [@Gelman_1992]. We then evaluated the model's parameters using the full Region of Practical Equivalence (ROPE) [@Makowski_2019], the percentage of a coefficient's whole posterior within the null region. We defined the predetermined ROPE null region for each parameter as -.1 to .1 in log units. A coefficient is significant if its posterior overlaps with the full ROPE less than 5%; it is considered null if it overlaps with the full ROPE more than 95%; and any overlap between 5% and 95% is undetermined [@Makowski_2019].
+
+Finally, we also ran a post-hoc Bayesian power analysis on the CSPC effect after the ROPE for 60 participants was undetermined (`r effect_stats("Locations", "interaction", "Congruency__x__Bias", 2)`; see the Results section). To reduce computational demand, the power analysis omitted previous trial RT, resulting in model `r dplyr::pull(results_with_preferred_params, "2_batches_Locations_model_num_simplified")` listed in Supplementary Table 1. We determined power as the number of full ROPE scores less than 5% or greater than 95% among `r dplyr::pull(results_with_preferred_params, "2_batches_Locations_n_simulations")` simulations each on `r dplyr::pull(results_with_preferred_params, "2_batches_Locations_power_sample_size")` artificial participants.
+
+# Results
+
+The two sets of results we report address, first, general congruency effects while taking into account baseline object naming RTs, and second, proportion-related modulation of congruency effects as a function of listwide or spatial context. 
+
+## Congruency Effects
+
+For general congruency effects, we used the control condition to subtract out image-specific baseline object naming times (under superimposed letters) from their respective congruent and incongruent RTs. Thus, we calculated baseline RTs for each image as the mean object-naming RT (over participants) for that image in the control condition, and then we calculated a difference-scored RT for each LWPC and CSPC group trial as that trial's RT minus its drawing's control-condition-derived baseline RT.
+
+In order to establish whether congruent labels would facilitate and unrelated words interfere with object naming relative to baseline (control condition) naming times, we analyzed whether the average congruent trial difference-scored RT was significantly less than zero, which would indicate a facilitation effect [@Rosinski_1975]. We then did the same for incongruent trials, where a score significantly greater than zero would indicate an interference effect. We used a generalized linear mixed-effects model from the lme4 package [@lme42015] that regressed difference-score RTs with random intercepts of participant ID and picture identity. As seen in Table 1 and Figure 2, we found clear evidence of a facilitation effect in congruent trials, and of an interference effect in the corresponding incongruent trials. Thus, we observed robust evidence for semantic facilitation and interference effects in this object-naming protocol.
+
+```{r table1, echo=FALSE, results='asis'}
+
+print(
+  xtable::xtable(
+    table_1,
+    align = "llll|ccccc",
+    caption = stringr::str_wrap(
+      "Frequentist generalized linear mixed-effects model estimates of a
+       congruency effect among each combination of condition, trial congruency,
+       and typical block (in LWPC condition) or location (in CSPC condition)
+       congruency, using difference-scored RTs"
+    )),
+  caption.placement = "top",
+  sanitize.colnames.function = function(x) x,
+  include.rownames = FALSE,
+  comment = FALSE
+)
+```
+
+```{r figure2, echo=FALSE,fig.width=6.875, fig.height= 6, fig.cap='(ref:figure2)', out.width = "\\textwidth", fig.pos = "!h"}
+
+# figure_2
+read_rds(here::here("fig_2.rds"))
+```
+
+(ref:figure2) Response time as a function of condition, trial congruency, and listwide (LWPC condition) or location-based (CSPC condition) proportion congruency. The vertical distributions chart every trial for every participant. Note that the y axis measures a given LWPC condition or CSPC condition RT relative to the baseline control RT for the corresponding drawing, such that numbers below zero represent facilitation and above zero represent interference effects. Asterisks to the left of their respective violin plot indicate a significant difference between congruent and incongruent RTs whereas asterisks to the right of their respective violin plot indicate a significant difference from zero.
+
+## Contextual Modulation of Congruency Effects
+
+We next sought to assess adjustments in control as a function of listwide and spatial context manipulations of the proportion of congruent trials. To this end, we separately analyzed how the congruency of a trial interacted with the proportion of congruent trials as varied over blocks (LWPC condition) or between screen locations (CSPC condition). The results are listed in Table 2. We observed a clear LWPC effect: trial congruency interacted significantly with the block-wise proportion congruent factor (`r effect_stats("Blocks", "interaction", "Congruency__x__Bias", 1)`), as mean congruency effects were smaller in the context of mostly-incongruent blocks (mean = `r results_with_preferred_params$Incongruent_congruency_effect` ms) than in mostly-congruent blocks (mean = `r results_with_preferred_params$Congruent_congruency_effect` ms). This was driven both by congruent trial RTs being significantly faster in mostly-congruent blocks compared to in mostly-incongruent ones (`r effect_stats("Blocks", "bias_difference_Congruent", "Bias", 1)`), as well as by incongruent trials being responded to significantly more quickly in mostly-incongruent than in mostly-congruent blocks (`r effect_stats("Blocks", "bias_difference_Incongruent", "Bias", 1)`). Thus, we replicated the within-participant LWPC effect with trial-unique stimuli while controlling for picture-specific baseline naming times.
+
+```{r table2, echo=FALSE, results='asis'}
+cat(table_2)
+```
+
+In contrast, we did not detect evidence for a CSPC effect in the condition where the proportion of congruent trials was manipulated as a function of stimulus location, as there was no interaction between trial congruency and location (`r effect_stats("Locations", "interaction", "Congruency__x__Bias", 2)`). Accordingly, neither the difference in congruent trial RTs between mostly-congruent and mostly-incongruent locations (`r effect_stats("Locations", "bias_difference_Congruent", "Bias", 2)`), nor the difference in incongruent trial RTs between mostly-congruent and mostly-incongruent locations (`r effect_stats("Locations", "bias_difference_Incongruent", "Bias", 2)`) were significant. Post-hoc, we also explored whether a CSPC effect may have emerged only after participants had a block of experience to learn about the location-based proportion congruency; nevertheless, the results did not change when dropping the first block (interaction between trial congruency and location’s typical congruency: `r effect_stats("Locations", "interaction", "Congruency__x__Bias", 2, results_ignoring_block_1)`)). Moreover, a post-hoc Bayesian power analysis indicated that a sample `r if (dplyr::pull(results_with_preferred_params, "2_batches_Locations_beyond_95") < .80) "greater than"` `r dplyr::pull(results_with_preferred_params, "2_batches_Locations_power_sample_size")` people would be required to detect or reject an effect with 0.80 power. This suggests that such an effect, if it did exist, would be so small as to arguably not to be of practical interest.
+
+# Discussion
+
+In this study, we employed trial-unique stimuli in a picture-word interference task to probe whether one can obtain LWPC and/or CSPC effects in a within-participants design absent any episodic memory or baseline picture-naming time confounds. The results were clear-cut in that we observed very strong evidence for (baseline-corrected) interference and facilitation effects in the picture-word interference task, and for their modulation by the proportion of congruent trials when varied over blocks – the LWPC effect. By contrast, we did not obtain any evidence for such modulation when the proportion of congruent trials was manipulated by spatial context rather than over time, that is, no CSPC effect could be detected. We discuss the implications of these two findings in turn.
+
+Given the trial-unique nature of all target and distracter features in this study, the results of the LWPC manipulation provide unambiguous evidence for a control-based interpretation of listwide proportion congruent effects. Advancing on the study by Spinelli and colleagues (2019), the within-participant nature of our design makes the present findings directly comparable to the large majority of prior studies in this literature using non-unique stimuli, and the baseline picture-naming time correction rules out possible spurious effects of chance differences in naming difficulty in the assignment of stimuli to task conditions. Importantly, since the use of trial-unique stimuli preempts any effects of item-based or episodic control learning in the current study, these results provide strong evidence for a cumulative control-learning mechanism that operates at the level of task goals (i.e., “name the pictures, ignore the words”) and is independent of the particulars of stimulus features presented on a given trial, as postulated by the conflict monitoring model and related theories (@Botvinick_2001, @Jiang_2014).
+
+Beyond providing particularly clean evidence for the existence of an LWPC effect in the absence of possible stimulus-response and episodic, item-based control learning effects, we hope that the current adaptation of Spinelli et al.’s (2019) protocol may also prove useful for future studies in methodological terms. First, at the technical level, the current data provide a proof-of-principle that vocal responding and automated response coding is feasible for use in online studies, thus opening up the possibility of fast and large-scale data acquisition with this task (for relevant code, see [github.com/jackdolgin/adaptive-control](github.com/jackdolgin/adaptive-control)). Second, at the conceptual level, the trial-unique picture-word interference protocol lends itself particularly well to addressing a crucial current question in the cognitive control literature, namely, what the interplay is between cumulative, task-goal adjustments in control based on recent control demand and the item-based, episodic reinstatement of control (e.g., @Whitehead_2020; @Bugg_2021). For instance, one could extend the current LWPC design to include a subset of trials where target stimuli reoccur, and gauge how the expected episodic reinstatement of control settings on these trials may interact with the current temporal context (low vs. high proportion congruent block). A similar strategy has proven informative in the field of reward-guided decision making, where episodic cues have been found to sometimes override cumulative learning of the current context (@Duncan_2018).  
+
+Turning to the CSPC manipulation, the current data add to the uncertainty over whether this phenomenon is reliable and does in fact reflect a pure association between location and control demands (@Crump_2017; @Hutcheon_2017; @Schmidt_2018; @Bugg_2020, @Bugg_2021). We found no evidence of a modulation of congruency effects by location, in spite of employing the same task and proportion bias as in the LWPC protocol, a large sample, and the horizontal axis for manipulating locations, which has been reported to be more potent than the vertical axis (@Weidler_2022). Moreover, a post-hoc power analysis suggested that detecting a potential CSPC effect in the current protocol would require a sample of more than 300 participants. The latter observation indicates that a location-based CSPC effect for trial-unique items would be so weak that, even if it did existed, it would arguably be of little practical interest.
+
+The lack of a CSPC effect in the current study could plausibly stem from the main factor that distinguishes this protocol from prior studies, namely, the use of trial-unique stimuli. The control-based interpretation of previous CSPC findings is that spatial locations (or other contextual features) become associated with particular control demands via an episodic binding process, and that presenting a stimulus in those locations would, reactively, retrieve or reinstate the associated control state (e.g., @Crump_2009). The current findings suggest that for this type of episodic control to develop, there has to be at least some degree of stimulus recurrence in addition to the systematic linking between location and control demand. This was the case in previous demonstrations of the CSPC effect: using small stimulus sets, both the biased “inducer” items and unbiased “transfer” or “diagnostic” items were presented at the different locations many times over (e.g., @Crump_2009; @Hutcheon_2017; @Crump_2017; @Bugg_2020; @Bugg_2021). This may both make the location-demand association more easily apparent as well as perhaps making it more likely that participants (implicitly) consider employing episodic information for performing the task, which would clearly be discouraged in an environment of trial-unique stimuli, such as the present CSPC experiment. This speculative interpretation could be tested in future studies, but the key conclusion here is that location-demand association alone, absent any stimulus repetitions, does not appear to give rise to a CSPC effect.    
+
+In conclusion, using an optimized version of Spinelli et al.’s (2019) trial-unique picture-word interference protocol, we showed strong evidence for people adapting their attentional focus to time-varying control demands (the LWPC effect) without any target, distracter, or response recurrences, supportive of the existence of goal-based incremental control learning processes. By contrast, we did not obtain any evidence for such modulation when the proportion of congruent trials was manipulated by spatial context rather than over time, suggesting that the location-based CSPC effect requires some level of repeated episodic features beyond stimulus locations to emerge. These results provide new insights into the boundary conditions of how learning and memory processes guide cognitive control.
+
+
+\newpage
+
+
+# References
+
+::: {#refs}
+:::
+
+\newpage
+
+\setcounter{table}{0}
+\renewcommand{\tablename}{Supplementary Table}
+\setcounter{figure}{0}
+\renewcommand{\figurename}{Supplementary Figure}
+
+```{r supptable1, echo=FALSE, results='asis'}
+
+print(
+  xtable::xtable(
+    supp_table_1,
+    align=c(rep("l", ncol(supp_table_1)), '|p{4in}'),
+    caption = stringr::str_wrap(
+      "Competing Bayesian model specifications for analyzing response times. Each row corresponds to one of nine model variants, defined by a combination of (a) the assumed RT distribution (Ex-Gaussian, skew-normal, or shifted lognormal) and (b) the fixed and random effects included in the regression formula. The final column indicates whether random intercepts, random slopes, or both were modeled for the participant and item factors (and, where relevant, the block factor)."
+    )),
+  caption.placement = "top",
+  sanitize.colnames.function = function(x) x,
+  include.rownames = FALSE,
+  comment = FALSE,
+  hline.after = rep(c(0:nrow(supp_table_1)))
+)
+```
+
+```{r suppfig1, echo=FALSE,fig.width=6.875, fig.height= 7, fig.cap='Trace plots for each parameter in the best-fitting Bayesian model for the LWPC data (shifted-lognormal distribution). Each panel displays draws over MCMC iterations for one parameter, with four chains overlaid. The close overlap among chains and lack of trending indicate good convergence.', out.width = "\\textwidth", fig.pos = "!h"}
+
+# supp_figure_blocks
+read_rds(here::here("1_Blocks_hist_and_trace_plots.rds"))
+```
+
+```{r suppfig2, echo=FALSE,fig.width=6.875, fig.height= 7, fig.cap='Trace plots for each parameter in the best-fitting Bayesian model for the CSPC data (shifted-lognormal distribution). Each panel shows MCMC samples for one parameter, with four chains overlaid. As with Figure 1, the chain traces suggest stable estimates and satisfactory mixing.', out.width = "\\textwidth", fig.pos = "!h"}
+
+# supp_figure_locations
+read_rds(here::here("1_Locations_hist_and_trace_plots.rds"))
+```
+

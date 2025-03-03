@@ -6,15 +6,15 @@ frequentist_stats <- function(){
   )
   
   regress_both_tasks <- function(df, keys, dv, analysis_type){
-    
-    condition <- str_extract(first(keys), "(?<=_).*")
-    
+  
+    condition <- str_extract(first(keys[1,1]) %>% as.character, "(?<=_).*")     # returns either "Blocks" or "Locations"
+    # condition <- str_extract(first(keys), "(?<=_).*")                           # returns either "Blocks" or "Locations"
     
     equation <- list(
       dv,
       "~",
       case_when(
-        analysis_type == "interaction" ~ "Congruency * Bias * prev_RT",
+        analysis_type == "interaction" ~ "Congruency * Bias",
         "Bias" %in% colnames(keys) ~ "1",
         TRUE ~ "Bias"
       ),
@@ -41,34 +41,27 @@ frequentist_stats <- function(){
           glmerControl(optimizer=glmer_optimzer, optCtrl=list(maxfun=2e5))
         )
       }
-
+      
       fitted <- tryCatch(
         glmer_func(equation),
-        warning = function(w){
-          tryCatch(
-            equation %>%
-              str_remove(" \\* prev_RT") %>%
-              glmer_func,
-            warning = function(w) equation %>%
-              str_remove(" \\+ \\(1 \\| Dominant_Response\\)") %>%
-              glmer_func
-          )
-        }
+        warning = function(w) equation %>%
+          str_remove(" \\+ \\(1 \\| Dominant_Response\\)") %>%
+          glmer_func
       )
-
+      
       if (analysis_type == "interaction"){
         fitted %>%
           list %>%
           row_append(paste(condition, analysis_type, sep = "_"))
-
+        
       } else if (analysis_type == "difference"){
         soon_to_be_col_name <- paste(
           condition, "bias", analysis_type, pull(keys, 2), sep = "_")
-
+        
         fitted %>%
           list %>%
           row_append(soon_to_be_col_name)
-
+        
         fitted %>%
           tidy %>%
           filter(str_detect(term, "Bias")) %>%
@@ -90,9 +83,8 @@ frequentist_stats <- function(){
       filter(effect == "fixed") %>%
       mutate(across(Task, ~if_else(. == "Predictive_Blocks", "LWPC", "CSPC")),
              across(p.value, ~if_else(. < .001, "< .001", paste(round(., 3L)))),
-             across(c(estimate, std.error, statistic, df), ~paste(round(., 3L))),
-             across(c(p.value, estimate, std.error),
-                    ~str_remove(., "0(?=\\.)"))) %>%
+             across(p.value, ~str_remove(., "0(?=\\.)")),
+             across(c(estimate, std.error, df), ~paste(round(., 1L)))) %>% 
       select(-c(effect, group, term)) %>%
       rename(
         Condition = Task,
