@@ -177,8 +177,7 @@ print(
 
 ```{r figure2, echo=FALSE,fig.width=6.875, fig.height= 6, fig.cap='(ref:figure2)', out.width = "\\textwidth", fig.pos = "!h"}
 
-# figure_2
-read_rds(here::here("fig_2.rds"))
+figure_2
 ```
 
 (ref:figure2) Response time as a function of condition, trial congruency, and listwide (LWPC condition) or location-based (CSPC condition) proportion congruency. The vertical distributions chart every trial for every participant. Note that the y axis measures a given LWPC condition or CSPC condition RT relative to the baseline control RT for the corresponding drawing, such that numbers below zero represent facilitation and above zero represent interference effects. Asterisks to the left of their respective violin plot indicate a significant difference between congruent and incongruent RTs whereas asterisks to the right of their respective violin plot indicate a significant difference from zero.
@@ -242,13 +241,11 @@ print(
 
 ```{r suppfig1, echo=FALSE,fig.width=6.875, fig.height= 7, fig.cap='Trace plots for each parameter in the best-fitting Bayesian model for the LWPC data (shifted-lognormal distribution). Each panel displays draws over MCMC iterations for one parameter, with four chains overlaid. The close overlap among chains and lack of trending indicate good convergence.', out.width = "\\textwidth", fig.pos = "!h"}
 
-# supp_figure_blocks
-read_rds(here::here("1_Blocks_hist_and_trace_plots.rds"))
+supp_figure_blocks
 ```
 
 ```{r suppfig2, echo=FALSE,fig.width=6.875, fig.height= 7, fig.cap='Trace plots for each parameter in the best-fitting Bayesian model for the CSPC data (shifted-lognormal distribution). Each panel shows MCMC samples for one parameter, with four chains overlaid. As with Figure 1, the chain traces suggest stable estimates and satisfactory mixing.', out.width = "\\textwidth", fig.pos = "!h"}
 
-# supp_figure_locations
-read_rds(here::here("1_Locations_hist_and_trace_plots.rds"))
+supp_figure_locations
 ```
 
